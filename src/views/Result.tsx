@@ -52,6 +52,29 @@ const genderExpressions = {
   }
 };
 
+
+const borderColors: Record<string, string> = {
+  warrior: "#f97316",
+  feeler: "#06b6d4",
+  thinker: "#6366f1",
+  nurturer: "#ec4899",
+  creator: "#a855f7",
+  achiever: "#10b981",
+  dreamer: "#14b8a6",
+  spark: "#eab308"
+};
+
+const shadowColors: Record<string, string> = {
+  warrior: "rgba(249, 115, 22, 0.35)",
+  feeler: "rgba(6, 182, 212, 0.35)",
+  thinker: "rgba(99, 102, 241, 0.35)",
+  nurturer: "rgba(236, 72, 153, 0.35)",
+  creator: "rgba(168, 85, 247, 0.35)",
+  achiever: "rgba(16, 185, 129, 0.35)",
+  dreamer: "rgba(20, 184, 166, 0.35)",
+  spark: "rgba(234, 179, 8, 0.35)"
+};
+
 export default function Result({ 
   profile, 
   userName, 
@@ -171,12 +194,40 @@ export default function Result({
     ? (genderExpressions[partnerGenderKey] || genderExpressions.female)
     : null;
 
-  return (
-    <div className="container result-container animate-fade-in">
-      
+    return (
+    <div className="container result-container animate-fade-in" style={{ position: "relative" }}>
+      {/* Decorative Ambient Background Glow Orbs */}
+      <div className="hide-on-print" style={{
+        position: "fixed",
+        top: "15%",
+        right: "10%",
+        width: "350px",
+        height: "350px",
+        background: "rgba(236, 72, 153, 0.05)",
+        borderRadius: "50%",
+        filter: "blur(90px)",
+        zIndex: -1,
+        pointerEvents: "none"
+      }} />
+      <div className="hide-on-print" style={{
+        position: "fixed",
+        bottom: "15%",
+        left: "5%",
+        width: "400px",
+        height: "400px",
+        background: "rgba(13, 148, 136, 0.04)",
+        borderRadius: "50%",
+        filter: "blur(110px)",
+        zIndex: -1,
+        pointerEvents: "none"
+      }} />
+
       {/* 1. COMPARISON MODE: Rendered only when a partner file is successfully uploaded */}
       {partnerData && partnerCompat && partnerExpr && (
-        <div className="glass-card" style={{ padding: 40, marginBottom: 40, border: "1px solid var(--color-primary)" }}>
+        <div className="glass-card" style={{ padding: 40, marginBottom: 40, border: "1px solid var(--color-primary)", position: "relative", overflow: "hidden" }}>
+          {/* Top border highlight */}
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 6, background: "linear-gradient(90deg, var(--color-primary), var(--color-cyan))" }} />
+          
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border-glass)", paddingBottom: 20, marginBottom: 30 }}>
             <div>
               <span className="quiz-category-tag" style={{ background: "rgba(236,72,153,0.1)", color: "var(--color-primary)" }}>
@@ -194,17 +245,18 @@ export default function Result({
 
             <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
               <div 
-                className="comp-overall-badge"
+                className="comp-overall-badge animate-float"
                 style={{ 
-                  background: "rgba(236, 72, 153, 0.08)",
-                  border: `1px solid ${partnerCompat.color}`,
-                  padding: "8px 20px"
+                  background: "rgba(255, 255, 255, 0.8)",
+                  border: "2px solid " + partnerCompat.color,
+                  boxShadow: "0 8px 25px rgba(0, 0, 0, 0.05), 0 0 15px " + partnerCompat.color + "20",
+                  padding: "10px 24px"
                 }}
               >
-                <div className="comp-overall-score" style={{ color: partnerCompat.color, fontSize: "2rem" }}>
+                <div className="comp-overall-score" style={{ color: partnerCompat.color, fontSize: "2.2rem", fontWeight: 800 }}>
                   {partnerCompat.overallScore}%
                 </div>
-                <div className="comp-overall-label" style={{ color: partnerCompat.color, fontSize: "0.75rem" }}>
+                <div className="comp-overall-label" style={{ color: partnerCompat.color, fontSize: "0.8rem", fontWeight: 700, textTransform: "uppercase" }}>
                   {partnerCompat.label}
                 </div>
               </div>
@@ -221,15 +273,15 @@ export default function Result({
           </div>
 
           {/* Logic Highlight Insights */}
-          <div className="glass-card" style={{ padding: 24, marginBottom: 30, background: "rgba(0,0,0,0.01)", textAlign: "left" }}>
+          <div className="glass-card" style={{ padding: 24, marginBottom: 30, background: "rgba(236, 72, 153, 0.01)", borderLeft: "4px solid var(--color-primary)", textAlign: "left" }}>
             <h4 style={{ fontSize: "0.95rem", color: "var(--text-dark)", textTransform: "uppercase", marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
               <Sliders size={16} color="var(--color-primary)" />
               Matchmaking Logic Insights
             </h4>
-            <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 10, paddingLeft: 0 }}>
+            <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 12, paddingLeft: 0, margin: 0 }}>
               {partnerCompat.insights.map((insight, idx) => (
-                <li key={idx} style={{ fontSize: "0.9rem", color: "var(--text-light)", display: "flex", gap: 8 }}>
-                  <span style={{ color: "var(--color-primary)" }}>✦</span>
+                <li key={idx} style={{ fontSize: "0.9rem", color: "var(--text-light)", display: "flex", gap: 8, lineHeight: 1.5 }}>
+                  <span style={{ color: "var(--color-primary)", fontWeight: "bold" }}>✦</span>
                   <span>{insight}</span>
                 </li>
               ))}
@@ -242,12 +294,24 @@ export default function Result({
             <div className="comp-dim-row">
               <div className="comp-dim-label">
                 <span className="comp-dim-title">Honesty-Humility (H-factor)</span>
-                <span className="comp-dim-score">{Math.round(100 - Math.abs(profile.dimensions.honesty - partnerData.dimensions.honesty)/4 * 100)}%</span>
+                <span className="comp-dim-score" style={{ color: borderColors[pType.id] || "var(--color-primary)" }}>
+                  {Math.round(100 - Math.abs(profile.dimensions.honesty - partnerData.dimensions.honesty)/4 * 100)}% Match
+                </span>
               </div>
               <div className="comp-slider-container">
                 <div className="comp-double-track">
-                  <div className="comp-marker comp-marker-me" style={{ left: `${getPercentage(profile.dimensions.honesty)}%` }}>Me</div>
-                  <div className="comp-marker comp-marker-them" style={{ left: `${getPercentage(partnerData.dimensions.honesty)}%` }}>{partnerData.name[0]}</div>
+                  {/* Connection Bridge */}
+                  <div style={{
+                    position: "absolute",
+                    left: Math.min(getPercentage(profile.dimensions.honesty), getPercentage(partnerData.dimensions.honesty)) + "%",
+                    width: Math.abs(getPercentage(profile.dimensions.honesty) - getPercentage(partnerData.dimensions.honesty)) + "%",
+                    height: "100%",
+                    background: "linear-gradient(90deg, var(--color-primary), var(--color-cyan))",
+                    opacity: 0.35,
+                    borderRadius: "9999px"
+                  }} />
+                  <div className="comp-marker comp-marker-me" style={{ left: getPercentage(profile.dimensions.honesty) + "%" }}>Me</div>
+                  <div className="comp-marker comp-marker-them" style={{ left: getPercentage(partnerData.dimensions.honesty) + "%", background: "var(--color-cyan)" }}>{partnerData.name[0]}</div>
                 </div>
                 <div className="comp-track-labels">
                   <span>Sly / Status-seeking</span>
@@ -260,12 +324,24 @@ export default function Result({
             <div className="comp-dim-row">
               <div className="comp-dim-label">
                 <span className="comp-dim-title">Emotionality & Sentimentality</span>
-                <span className="comp-dim-score">{Math.round(100 - Math.abs(profile.dimensions.emotionality - partnerData.dimensions.emotionality)/4 * 100)}%</span>
+                <span className="comp-dim-score" style={{ color: borderColors[pType.id] || "var(--color-primary)" }}>
+                  {Math.round(100 - Math.abs(profile.dimensions.emotionality - partnerData.dimensions.emotionality)/4 * 100)}% Match
+                </span>
               </div>
               <div className="comp-slider-container">
                 <div className="comp-double-track">
-                  <div className="comp-marker comp-marker-me" style={{ left: `${getPercentage(profile.dimensions.emotionality)}%` }}>Me</div>
-                  <div className="comp-marker comp-marker-them" style={{ left: `${getPercentage(partnerData.dimensions.emotionality)}%` }}>{partnerData.name[0]}</div>
+                  {/* Connection Bridge */}
+                  <div style={{
+                    position: "absolute",
+                    left: Math.min(getPercentage(profile.dimensions.emotionality), getPercentage(partnerData.dimensions.emotionality)) + "%",
+                    width: Math.abs(getPercentage(profile.dimensions.emotionality) - getPercentage(partnerData.dimensions.emotionality)) + "%",
+                    height: "100%",
+                    background: "linear-gradient(90deg, var(--color-primary), var(--color-cyan))",
+                    opacity: 0.35,
+                    borderRadius: "9999px"
+                  }} />
+                  <div className="comp-marker comp-marker-me" style={{ left: getPercentage(profile.dimensions.emotionality) + "%" }}>Me</div>
+                  <div className="comp-marker comp-marker-them" style={{ left: getPercentage(partnerData.dimensions.emotionality) + "%", background: "var(--color-cyan)" }}>{partnerData.name[0]}</div>
                 </div>
                 <div className="comp-track-labels">
                   <span>Tough-minded / Detached</span>
@@ -278,12 +354,24 @@ export default function Result({
             <div className="comp-dim-row">
               <div className="comp-dim-label">
                 <span className="comp-dim-title">Extraversion & Energy</span>
-                <span className="comp-dim-score">{Math.round(100 - Math.abs(profile.dimensions.extraversion - partnerData.dimensions.extraversion)/4 * 100)}%</span>
+                <span className="comp-dim-score" style={{ color: borderColors[pType.id] || "var(--color-primary)" }}>
+                  {Math.round(100 - Math.abs(profile.dimensions.extraversion - partnerData.dimensions.extraversion)/4 * 100)}% Match
+                </span>
               </div>
               <div className="comp-slider-container">
                 <div className="comp-double-track">
-                  <div className="comp-marker comp-marker-me" style={{ left: `${getPercentage(profile.dimensions.extraversion)}%` }}>Me</div>
-                  <div className="comp-marker comp-marker-them" style={{ left: `${getPercentage(partnerData.dimensions.extraversion)}%` }}>{partnerData.name[0]}</div>
+                  {/* Connection Bridge */}
+                  <div style={{
+                    position: "absolute",
+                    left: Math.min(getPercentage(profile.dimensions.extraversion), getPercentage(partnerData.dimensions.extraversion)) + "%",
+                    width: Math.abs(getPercentage(profile.dimensions.extraversion) - getPercentage(partnerData.dimensions.extraversion)) + "%",
+                    height: "100%",
+                    background: "linear-gradient(90deg, var(--color-primary), var(--color-cyan))",
+                    opacity: 0.35,
+                    borderRadius: "9999px"
+                  }} />
+                  <div className="comp-marker comp-marker-me" style={{ left: getPercentage(profile.dimensions.extraversion) + "%" }}>Me</div>
+                  <div className="comp-marker comp-marker-them" style={{ left: getPercentage(partnerData.dimensions.extraversion) + "%", background: "var(--color-cyan)" }}>{partnerData.name[0]}</div>
                 </div>
                 <div className="comp-track-labels">
                   <span>Introspective / Reserved</span>
@@ -296,12 +384,24 @@ export default function Result({
             <div className="comp-dim-row">
               <div className="comp-dim-label">
                 <span className="comp-dim-title">Agreeableness & Patience</span>
-                <span className="comp-dim-score">{Math.round(100 - Math.abs(profile.dimensions.agreeableness - partnerData.dimensions.agreeableness)/4 * 100)}%</span>
+                <span className="comp-dim-score" style={{ color: borderColors[pType.id] || "var(--color-primary)" }}>
+                  {Math.round(100 - Math.abs(profile.dimensions.agreeableness - partnerData.dimensions.agreeableness)/4 * 100)}% Match
+                </span>
               </div>
               <div className="comp-slider-container">
                 <div className="comp-double-track">
-                  <div className="comp-marker comp-marker-me" style={{ left: `${getPercentage(profile.dimensions.agreeableness)}%` }}>Me</div>
-                  <div className="comp-marker comp-marker-them" style={{ left: `${getPercentage(partnerData.dimensions.agreeableness)}%` }}>{partnerData.name[0]}</div>
+                  {/* Connection Bridge */}
+                  <div style={{
+                    position: "absolute",
+                    left: Math.min(getPercentage(profile.dimensions.agreeableness), getPercentage(partnerData.dimensions.agreeableness)) + "%",
+                    width: Math.abs(getPercentage(profile.dimensions.agreeableness) - getPercentage(partnerData.dimensions.agreeableness)) + "%",
+                    height: "100%",
+                    background: "linear-gradient(90deg, var(--color-primary), var(--color-cyan))",
+                    opacity: 0.35,
+                    borderRadius: "9999px"
+                  }} />
+                  <div className="comp-marker comp-marker-me" style={{ left: getPercentage(profile.dimensions.agreeableness) + "%" }}>Me</div>
+                  <div className="comp-marker comp-marker-them" style={{ left: getPercentage(partnerData.dimensions.agreeableness) + "%", background: "var(--color-cyan)" }}>{partnerData.name[0]}</div>
                 </div>
                 <div className="comp-track-labels">
                   <span>Skeptical / Headstrong</span>
@@ -314,12 +414,24 @@ export default function Result({
             <div className="comp-dim-row">
               <div className="comp-dim-label">
                 <span className="comp-dim-title">Conscientiousness & Order</span>
-                <span className="comp-dim-score">{Math.round(100 - Math.abs(profile.dimensions.conscientiousness - partnerData.dimensions.conscientiousness)/4 * 100)}%</span>
+                <span className="comp-dim-score" style={{ color: borderColors[pType.id] || "var(--color-primary)" }}>
+                  {Math.round(100 - Math.abs(profile.dimensions.conscientiousness - partnerData.dimensions.conscientiousness)/4 * 100)}% Match
+                </span>
               </div>
               <div className="comp-slider-container">
                 <div className="comp-double-track">
-                  <div className="comp-marker comp-marker-me" style={{ left: `${getPercentage(profile.dimensions.conscientiousness)}%` }}>Me</div>
-                  <div className="comp-marker comp-marker-them" style={{ left: `${getPercentage(partnerData.dimensions.conscientiousness)}%` }}>{partnerData.name[0]}</div>
+                  {/* Connection Bridge */}
+                  <div style={{
+                    position: "absolute",
+                    left: Math.min(getPercentage(profile.dimensions.conscientiousness), getPercentage(partnerData.dimensions.conscientiousness)) + "%",
+                    width: Math.abs(getPercentage(profile.dimensions.conscientiousness) - getPercentage(partnerData.dimensions.conscientiousness)) + "%",
+                    height: "100%",
+                    background: "linear-gradient(90deg, var(--color-primary), var(--color-cyan))",
+                    opacity: 0.35,
+                    borderRadius: "9999px"
+                  }} />
+                  <div className="comp-marker comp-marker-me" style={{ left: getPercentage(profile.dimensions.conscientiousness) + "%" }}>Me</div>
+                  <div className="comp-marker comp-marker-them" style={{ left: getPercentage(partnerData.dimensions.conscientiousness) + "%", background: "var(--color-cyan)" }}>{partnerData.name[0]}</div>
                 </div>
                 <div className="comp-track-labels">
                   <span>Spontaneous / Flexible</span>
@@ -332,12 +444,24 @@ export default function Result({
             <div className="comp-dim-row">
               <div className="comp-dim-label">
                 <span className="comp-dim-title">Openness & Curiosity</span>
-                <span className="comp-dim-score">{Math.round(100 - Math.abs(profile.dimensions.openness - partnerData.dimensions.openness)/4 * 100)}%</span>
+                <span className="comp-dim-score" style={{ color: borderColors[pType.id] || "var(--color-primary)" }}>
+                  {Math.round(100 - Math.abs(profile.dimensions.openness - partnerData.dimensions.openness)/4 * 100)}% Match
+                </span>
               </div>
               <div className="comp-slider-container">
                 <div className="comp-double-track">
-                  <div className="comp-marker comp-marker-me" style={{ left: `${getPercentage(profile.dimensions.openness)}%` }}>Me</div>
-                  <div className="comp-marker comp-marker-them" style={{ left: `${getPercentage(partnerData.dimensions.openness)}%` }}>{partnerData.name[0]}</div>
+                  {/* Connection Bridge */}
+                  <div style={{
+                    position: "absolute",
+                    left: Math.min(getPercentage(profile.dimensions.openness), getPercentage(partnerData.dimensions.openness)) + "%",
+                    width: Math.abs(getPercentage(profile.dimensions.openness) - getPercentage(partnerData.dimensions.openness)) + "%",
+                    height: "100%",
+                    background: "linear-gradient(90deg, var(--color-primary), var(--color-cyan))",
+                    opacity: 0.35,
+                    borderRadius: "9999px"
+                  }} />
+                  <div className="comp-marker comp-marker-me" style={{ left: getPercentage(profile.dimensions.openness) + "%" }}>Me</div>
+                  <div className="comp-marker comp-marker-them" style={{ left: getPercentage(partnerData.dimensions.openness) + "%", background: "var(--color-cyan)" }}>{partnerData.name[0]}</div>
                 </div>
                 <div className="comp-track-labels">
                   <span>Practical / Traditional</span>
@@ -350,12 +474,24 @@ export default function Result({
             <div className="comp-dim-row">
               <div className="comp-dim-label">
                 <span className="comp-dim-title">Emotional Intelligence (EQ)</span>
-                <span className="comp-dim-score">{Math.round(100 - Math.abs(profile.dimensions.eq - partnerData.dimensions.eq)/4 * 100)}%</span>
+                <span className="comp-dim-score" style={{ color: borderColors[pType.id] || "var(--color-primary)" }}>
+                  {Math.round(100 - Math.abs(profile.dimensions.eq - partnerData.dimensions.eq)/4 * 100)}% Match
+                </span>
               </div>
               <div className="comp-slider-container">
                 <div className="comp-double-track">
-                  <div className="comp-marker comp-marker-me" style={{ left: `${getPercentage(profile.dimensions.eq)}%` }}>Me</div>
-                  <div className="comp-marker comp-marker-them" style={{ left: `${getPercentage(partnerData.dimensions.eq)}%` }}>{partnerData.name[0]}</div>
+                  {/* Connection Bridge */}
+                  <div style={{
+                    position: "absolute",
+                    left: Math.min(getPercentage(profile.dimensions.eq), getPercentage(partnerData.dimensions.eq)) + "%",
+                    width: Math.abs(getPercentage(profile.dimensions.eq) - getPercentage(partnerData.dimensions.eq)) + "%",
+                    height: "100%",
+                    background: "linear-gradient(90deg, var(--color-primary), var(--color-cyan))",
+                    opacity: 0.35,
+                    borderRadius: "9999px"
+                  }} />
+                  <div className="comp-marker comp-marker-me" style={{ left: getPercentage(profile.dimensions.eq) + "%" }}>Me</div>
+                  <div className="comp-marker comp-marker-them" style={{ left: getPercentage(partnerData.dimensions.eq) + "%", background: "var(--color-cyan)" }}>{partnerData.name[0]}</div>
                 </div>
                 <div className="comp-track-labels">
                   <span>Logical / Private</span>
@@ -368,12 +504,24 @@ export default function Result({
             <div className="comp-dim-row">
               <div className="comp-dim-label">
                 <span className="comp-dim-title">Conflict Handling Style</span>
-                <span className="comp-dim-score">{Math.round(100 - Math.abs(profile.dimensions.conflict - partnerData.dimensions.conflict)/4 * 100)}%</span>
+                <span className="comp-dim-score" style={{ color: borderColors[pType.id] || "var(--color-primary)" }}>
+                  {Math.round(100 - Math.abs(profile.dimensions.conflict - partnerData.dimensions.conflict)/4 * 100)}% Match
+                </span>
               </div>
               <div className="comp-slider-container">
                 <div className="comp-double-track">
-                  <div className="comp-marker comp-marker-me" style={{ left: `${getPercentage(profile.dimensions.conflict)}%` }}>Me</div>
-                  <div className="comp-marker comp-marker-them" style={{ left: `${getPercentage(partnerData.dimensions.conflict)}%` }}>{partnerData.name[0]}</div>
+                  {/* Connection Bridge */}
+                  <div style={{
+                    position: "absolute",
+                    left: Math.min(getPercentage(profile.dimensions.conflict), getPercentage(partnerData.dimensions.conflict)) + "%",
+                    width: Math.abs(getPercentage(profile.dimensions.conflict) - getPercentage(partnerData.dimensions.conflict)) + "%",
+                    height: "100%",
+                    background: "linear-gradient(90deg, var(--color-primary), var(--color-cyan))",
+                    opacity: 0.35,
+                    borderRadius: "9999px"
+                  }} />
+                  <div className="comp-marker comp-marker-me" style={{ left: getPercentage(profile.dimensions.conflict) + "%" }}>Me</div>
+                  <div className="comp-marker comp-marker-them" style={{ left: getPercentage(partnerData.dimensions.conflict) + "%", background: "var(--color-cyan)" }}>{partnerData.name[0]}</div>
                 </div>
                 <div className="comp-track-labels">
                   <span>Space-seeking / Internal</span>
@@ -389,56 +537,61 @@ export default function Result({
             
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               {/* Comm */}
-              <div className="glass-card" style={{ padding: 16 }}>
-                <h5 style={{ fontSize: "0.9rem", color: "var(--color-primary)", marginBottom: 6 }}>Communication Style</h5>
-                <p style={{ fontSize: "0.85rem", margin: "4px 0" }}>
+              <div className="glass-card" style={{ padding: 20, position: "relative", overflow: "hidden" }}>
+                <div style={{ position: "absolute", top: 0, left: 0, bottom: 0, width: 4, background: "var(--color-primary)" }} />
+                <h5 style={{ fontSize: "0.95rem", color: "var(--color-primary)", fontWeight: 700, marginBottom: 8, paddingLeft: 6 }}>Communication Style</h5>
+                <p style={{ fontSize: "0.9rem", margin: "4px 0", paddingLeft: 6 }}>
                   <strong>You ({userName}):</strong> {userExpr.communication}
                 </p>
-                <p style={{ fontSize: "0.85rem", margin: "4px 0", borderTop: "1px solid rgba(0,0,0,0.04)", paddingTop: 6 }}>
+                <p style={{ fontSize: "0.9rem", margin: "4px 0", borderTop: "1px solid rgba(0,0,0,0.04)", paddingTop: 8, marginTop: 8, paddingLeft: 6 }}>
                   <strong>{partnerData.name}:</strong> {partnerExpr.communication}
                 </p>
               </div>
 
               {/* Vulnerability */}
-              <div className="glass-card" style={{ padding: 16 }}>
-                <h5 style={{ fontSize: "0.9rem", color: "var(--color-primary)", marginBottom: 6 }}>Emotional Vulnerability</h5>
-                <p style={{ fontSize: "0.85rem", margin: "4px 0" }}>
+              <div className="glass-card" style={{ padding: 20, position: "relative", overflow: "hidden" }}>
+                <div style={{ position: "absolute", top: 0, left: 0, bottom: 0, width: 4, background: "var(--color-cyan)" }} />
+                <h5 style={{ fontSize: "0.95rem", color: "var(--color-cyan)", fontWeight: 700, marginBottom: 8, paddingLeft: 6 }}>Emotional Vulnerability</h5>
+                <p style={{ fontSize: "0.9rem", margin: "4px 0", paddingLeft: 6 }}>
                   <strong>You ({userName}):</strong> {userExpr.vulnerability}
                 </p>
-                <p style={{ fontSize: "0.85rem", margin: "4px 0", borderTop: "1px solid rgba(0,0,0,0.04)", paddingTop: 6 }}>
+                <p style={{ fontSize: "0.9rem", margin: "4px 0", borderTop: "1px solid rgba(0,0,0,0.04)", paddingTop: 8, marginTop: 8, paddingLeft: 6 }}>
                   <strong>{partnerData.name}:</strong> {partnerExpr.vulnerability}
                 </p>
               </div>
 
               {/* Stress */}
-              <div className="glass-card" style={{ padding: 16 }}>
-                <h5 style={{ fontSize: "0.9rem", color: "var(--color-primary)", marginBottom: 6 }}>Stress Response & Processing</h5>
-                <p style={{ fontSize: "0.85rem", margin: "4px 0" }}>
+              <div className="glass-card" style={{ padding: 20, position: "relative", overflow: "hidden" }}>
+                <div style={{ position: "absolute", top: 0, left: 0, bottom: 0, width: 4, background: "var(--color-primary)" }} />
+                <h5 style={{ fontSize: "0.95rem", color: "var(--color-primary)", fontWeight: 700, marginBottom: 8, paddingLeft: 6 }}>Stress Response & Processing</h5>
+                <p style={{ fontSize: "0.9rem", margin: "4px 0", paddingLeft: 6 }}>
                   <strong>You ({userName}):</strong> {userExpr.stress}
                 </p>
-                <p style={{ fontSize: "0.85rem", margin: "4px 0", borderTop: "1px solid rgba(0,0,0,0.04)", paddingTop: 6 }}>
+                <p style={{ fontSize: "0.9rem", margin: "4px 0", borderTop: "1px solid rgba(0,0,0,0.04)", paddingTop: 8, marginTop: 8, paddingLeft: 6 }}>
                   <strong>{partnerData.name}:</strong> {partnerExpr.stress}
                 </p>
               </div>
 
               {/* Love Languages */}
-              <div className="glass-card" style={{ padding: 16 }}>
-                <h5 style={{ fontSize: "0.9rem", color: "var(--color-primary)", marginBottom: 6 }}>Primary Love Language Channels</h5>
-                <p style={{ fontSize: "0.85rem", margin: "4px 0" }}>
+              <div className="glass-card" style={{ padding: 20, position: "relative", overflow: "hidden" }}>
+                <div style={{ position: "absolute", top: 0, left: 0, bottom: 0, width: 4, background: "var(--color-cyan)" }} />
+                <h5 style={{ fontSize: "0.95rem", color: "var(--color-cyan)", fontWeight: 700, marginBottom: 8, paddingLeft: 6 }}>Primary Love Language Channels</h5>
+                <p style={{ fontSize: "0.9rem", margin: "4px 0", paddingLeft: 6 }}>
                   <strong>You ({userName}):</strong> {userExpr.loveLanguage}
                 </p>
-                <p style={{ fontSize: "0.85rem", margin: "4px 0", borderTop: "1px solid rgba(0,0,0,0.04)", paddingTop: 6 }}>
+                <p style={{ fontSize: "0.9rem", margin: "4px 0", borderTop: "1px solid rgba(0,0,0,0.04)", paddingTop: 8, marginTop: 8, paddingLeft: 6 }}>
                   <strong>{partnerData.name}:</strong> {partnerExpr.loveLanguage}
                 </p>
               </div>
 
               {/* Conflict */}
-              <div className="glass-card" style={{ padding: 16 }}>
-                <h5 style={{ fontSize: "0.9rem", color: "var(--color-primary)", marginBottom: 6 }}>Conflict Resolution Tendencies</h5>
-                <p style={{ fontSize: "0.85rem", margin: "4px 0" }}>
+              <div className="glass-card" style={{ padding: 20, position: "relative", overflow: "hidden" }}>
+                <div style={{ position: "absolute", top: 0, left: 0, bottom: 0, width: 4, background: "var(--color-primary)" }} />
+                <h5 style={{ fontSize: "0.95rem", color: "var(--color-primary)", fontWeight: 700, marginBottom: 8, paddingLeft: 6 }}>Conflict Resolution Tendencies</h5>
+                <p style={{ fontSize: "0.9rem", margin: "4px 0", paddingLeft: 6 }}>
                   <strong>You ({userName}):</strong> {userExpr.conflict}
                 </p>
-                <p style={{ fontSize: "0.85rem", margin: "4px 0", borderTop: "1px solid rgba(0,0,0,0.04)", paddingTop: 6 }}>
+                <p style={{ fontSize: "0.9rem", margin: "4px 0", borderTop: "1px solid rgba(0,0,0,0.04)", paddingTop: 8, marginTop: 8, paddingLeft: 6 }}>
                   <strong>{partnerData.name}:</strong> {partnerExpr.conflict}
                 </p>
               </div>
@@ -454,66 +607,66 @@ export default function Result({
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                   <thead>
                     <tr style={{ borderBottom: "2px solid var(--border-glass)", color: "var(--text-dark)" }}>
-                      <th style={{ textAlign: "left", padding: "8px 12px", fontWeight: 700 }}>Biographical Factor</th>
-                      <th style={{ textAlign: "left", padding: "8px 12px", fontWeight: 700 }}>You ({userName})</th>
-                      <th style={{ textAlign: "left", padding: "8px 12px", fontWeight: 700 }}>Partner ({partnerData.name})</th>
+                      <th style={{ textAlign: "left", padding: "10px 12px", fontWeight: 700 }}>Biographical Factor</th>
+                      <th style={{ textAlign: "left", padding: "10px 12px", fontWeight: 700 }}>You ({userName})</th>
+                      <th style={{ textAlign: "left", padding: "10px 12px", fontWeight: 700 }}>Partner ({partnerData.name})</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.04)" }}>
-                      <td style={{ padding: "10px 12px", fontWeight: 600 }}>Age</td>
-                      <td style={{ padding: "10px 12px" }}>{demographics.age} years</td>
-                      <td style={{ padding: "10px 12px" }}>{partnerData.demographics.age} years</td>
+                      <td style={{ padding: "12px", fontWeight: 600 }}>Age</td>
+                      <td style={{ padding: "12px" }}>{demographics.age} years</td>
+                      <td style={{ padding: "12px" }}>{partnerData.demographics.age} years</td>
                     </tr>
                     <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.04)" }}>
-                      <td style={{ padding: "10px 12px", fontWeight: 600 }}>Country</td>
-                      <td style={{ padding: "10px 12px" }}>{demographics.country}</td>
-                      <td style={{ padding: "10px 12px" }}>{partnerData.demographics.country}</td>
+                      <td style={{ padding: "12px", fontWeight: 600 }}>Country</td>
+                      <td style={{ padding: "12px" }}>{demographics.country}</td>
+                      <td style={{ padding: "12px" }}>{partnerData.demographics.country}</td>
                     </tr>
                     <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.04)" }}>
-                      <td style={{ padding: "10px 12px", fontWeight: 600 }}>Birth / Living Cities</td>
-                      <td style={{ padding: "10px 12px" }}>{demographics.bornCity} / {demographics.livingCity}</td>
-                      <td style={{ padding: "10px 12px" }}>{partnerData.demographics.bornCity} / {partnerData.demographics.livingCity}</td>
+                      <td style={{ padding: "12px", fontWeight: 600 }}>Birth / Living Cities</td>
+                      <td style={{ padding: "12px" }}>{demographics.bornCity} / {demographics.livingCity}</td>
+                      <td style={{ padding: "12px" }}>{partnerData.demographics.bornCity} / {partnerData.demographics.livingCity}</td>
                     </tr>
                     <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.04)" }}>
-                      <td style={{ padding: "10px 12px", fontWeight: 600 }}>Languages</td>
-                      <td style={{ padding: "10px 12px" }}>{demographics.knownLanguages}</td>
-                      <td style={{ padding: "10px 12px" }}>{partnerData.demographics.knownLanguages}</td>
+                      <td style={{ padding: "12px", fontWeight: 600 }}>Languages</td>
+                      <td style={{ padding: "12px" }}>{demographics.knownLanguages}</td>
+                      <td style={{ padding: "12px" }}>{partnerData.demographics.knownLanguages}</td>
                     </tr>
                     <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.04)" }}>
-                      <td style={{ padding: "10px 12px", fontWeight: 600 }}>Education</td>
-                      <td style={{ padding: "10px 12px" }}>{demographics.education}</td>
-                      <td style={{ padding: "10px 12px" }}>{partnerData.demographics.education}</td>
+                      <td style={{ padding: "12px", fontWeight: 600 }}>Education</td>
+                      <td style={{ padding: "12px" }}>{demographics.education}</td>
+                      <td style={{ padding: "12px" }}>{partnerData.demographics.education}</td>
                     </tr>
                     <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.04)" }}>
-                      <td style={{ padding: "10px 12px", fontWeight: 600 }}>Languages Studied</td>
-                      <td style={{ padding: "10px 12px" }}>{demographics.languagesStudied}</td>
-                      <td style={{ padding: "10px 12px" }}>{partnerData.demographics.languagesStudied}</td>
+                      <td style={{ padding: "12px", fontWeight: 600 }}>Languages Studied</td>
+                      <td style={{ padding: "12px" }}>{demographics.languagesStudied}</td>
+                      <td style={{ padding: "12px" }}>{partnerData.demographics.languagesStudied}</td>
                     </tr>
                     <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.04)" }}>
-                      <td style={{ padding: "10px 12px", fontWeight: 600 }}>No. of Siblings</td>
-                      <td style={{ padding: "10px 12px" }}>{demographics.siblings} siblings</td>
-                      <td style={{ padding: "10px 12px" }}>{partnerData.demographics.siblings} siblings</td>
+                      <td style={{ padding: "12px", fontWeight: 600 }}>No. of Siblings</td>
+                      <td style={{ padding: "12px" }}>{demographics.siblings} siblings</td>
+                      <td style={{ padding: "12px" }}>{partnerData.demographics.siblings} siblings</td>
                     </tr>
                     <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.04)" }}>
-                      <td style={{ padding: "10px 12px", fontWeight: 600 }}>Parents Educated?</td>
-                      <td style={{ padding: "10px 12px", textTransform: "capitalize" }}>{demographics.parentsEducated}</td>
-                      <td style={{ padding: "10px 12px", textTransform: "capitalize" }}>{partnerData.demographics.parentsEducated}</td>
+                      <td style={{ padding: "12px", textTransform: "capitalize", fontWeight: 600 }}>Parents Educated?</td>
+                      <td style={{ padding: "12px" }}>{demographics.parentsEducated}</td>
+                      <td style={{ padding: "12px" }}>{partnerData.demographics.parentsEducated}</td>
                     </tr>
                     <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.04)" }}>
-                      <td style={{ padding: "10px 12px", fontWeight: 600 }}>Socioeconomic Standing</td>
-                      <td style={{ padding: "10px 12px", textTransform: "capitalize" }}>{demographics.wealthStatus}</td>
-                      <td style={{ padding: "10px 12px", textTransform: "capitalize" }}>{partnerData.demographics.wealthStatus}</td>
+                      <td style={{ padding: "12px", textTransform: "capitalize", fontWeight: 600 }}>Socioeconomic Standing</td>
+                      <td style={{ padding: "12px" }}>{demographics.wealthStatus}</td>
+                      <td style={{ padding: "12px" }}>{partnerData.demographics.wealthStatus}</td>
                     </tr>
                     <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.04)" }}>
-                      <td style={{ padding: "10px 12px", fontWeight: 600 }}>Experienced Heartbreak?</td>
-                      <td style={{ padding: "10px 12px", textTransform: "capitalize" }}>{demographics.loveFailure?.replace(/_/g, " ")}</td>
-                      <td style={{ padding: "10px 12px", textTransform: "capitalize" }}>{partnerData.demographics.loveFailure?.replace(/_/g, " ")}</td>
+                      <td style={{ padding: "12px", textTransform: "capitalize", fontWeight: 600 }}>Experienced Heartbreak?</td>
+                      <td style={{ padding: "12px" }}>{demographics.loveFailure?.replace(/_/g, " ")}</td>
+                      <td style={{ padding: "12px" }}>{partnerData.demographics.loveFailure?.replace(/_/g, " ")}</td>
                     </tr>
                     <tr>
-                      <td style={{ padding: "10px 12px", fontWeight: 600 }}>Disability Status</td>
-                      <td style={{ padding: "10px 12px" }}>{demographics.disability}</td>
-                      <td style={{ padding: "10px 12px" }}>{partnerData.demographics.disability}</td>
+                      <td style={{ padding: "12px", fontWeight: 600 }}>Disability Status</td>
+                      <td style={{ padding: "12px" }}>{demographics.disability}</td>
+                      <td style={{ padding: "12px" }}>{partnerData.demographics.disability}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -522,7 +675,7 @@ export default function Result({
           )}
           
           <div style={{ display: "flex", justifyContent: "center", marginTop: 30 }}>
-            <button className="btn btn-secondary" onClick={() => setPartnerData(null)}>
+            <button className="btn btn-secondary animate-float" onClick={() => setPartnerData(null)}>
               Exit Match & View My Report
             </button>
           </div>
@@ -532,7 +685,10 @@ export default function Result({
       {/* 2. CORE USER SOUL REPORT */}
       <div className="print-report-area">
         {/* Header Profile Card */}
-        <div className="glass-card result-header-card">
+        <div className="glass-card result-header-card" style={{ position: "relative", overflow: "hidden" }}>
+          {/* Top Gradient Highlight Bar (for standard borders that play well with border radius) */}
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 6, background: pType.color }} />
+          
           <div 
             style={{ 
               position: "absolute", 
@@ -540,7 +696,7 @@ export default function Result({
               left: "-50px", 
               width: 200, 
               height: 200, 
-              background: pType.color, 
+              background: borderColors[pType.id] || "#ec4899", 
               opacity: 0.15, 
               filter: "blur(60px)",
               borderRadius: "50%",
@@ -549,29 +705,31 @@ export default function Result({
           />
           
           <div 
-            className="result-badge-glow"
+            className="result-badge-glow animate-float"
             style={{ 
               background: pType.color,
-              boxShadow: `0 8px 30px ${pType.color.split(" ")[2] || "rgba(236, 72, 153, 0.4)"}` 
+              boxShadow: "0 8px 30px " + (shadowColors[pType.id] || "rgba(236, 72, 153, 0.4)"),
+              border: "3px solid #ffffff",
+              transition: "transform 0.5s ease"
             }}
           >
             <span style={{ position: "relative", zIndex: 1 }}>{pType.emoji}</span>
           </div>
 
-          <h1 className="result-type-title text-gradient">{userName}'s Soul Type: {pType.title}</h1>
-          <p style={{ fontStyle: "italic", color: "var(--color-primary)", fontWeight: 700, marginBottom: 16 }}>
+          <h1 className="result-type-title text-gradient" style={{ fontWeight: 800 }}>{userName}'s Soul Type: {pType.title}</h1>
+          <p style={{ fontStyle: "italic", color: borderColors[pType.id] || "var(--color-primary)", fontWeight: 700, marginBottom: 16 }}>
             Secondary Influence: {sType.emoji} {sType.title} • ({userGenderKey === "male" ? "Male ♂️" : "Female ♀️"})
           </p>
 
-          <p className="result-desc">{pType.description}</p>
+          <p className="result-desc" style={{ fontSize: "1.1rem", lineHeight: 1.6 }}>{pType.description}</p>
 
           <div className="result-actions hide-on-print" style={{ flexWrap: "wrap" }}>
-            <button className="btn btn-primary" onClick={handleDownloadProfile}>
+            <button className="btn btn-primary btn-glow" onClick={handleDownloadProfile}>
               <Download size={16} />
               Download My Profile File
             </button>
 
-            <button className="btn btn-primary btn-glow" onClick={handlePrint}>
+            <button className="btn btn-accent btn-glow" onClick={handlePrint}>
               <Printer size={16} />
               Print My Report
             </button>
@@ -585,174 +743,354 @@ export default function Result({
 
         {/* Background Upbringing Synthesis Card */}
         {demographics && narrativeParagraphs.length > 0 && (
-          <div className="glass-card result-subcard" style={{ textAlign: "left", marginBottom: 30, background: "radial-gradient(circle at top right, rgba(236, 72, 153, 0.04) 0%, transparent 60%)" }}>
-            <h3 style={{ borderBottom: "1px solid var(--border-glass)", paddingBottom: 12, marginBottom: 16 }}>
-              <Sparkles size={20} color="var(--color-primary)" />
+          <div className="glass-card result-subcard" style={{ 
+            textAlign: "left", 
+            marginBottom: 40, 
+            position: "relative",
+            overflow: "hidden",
+            borderLeft: "6px solid " + (borderColors[pType.id] || "var(--color-primary)"),
+            background: "radial-gradient(circle at top right, rgba(236, 72, 153, 0.03) 0%, transparent 60%)" 
+          }}>
+            <h3 style={{ borderBottom: "1px solid var(--border-glass)", paddingBottom: 12, marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
+              <Sparkles size={22} color={borderColors[pType.id] || "var(--color-primary)"} />
               🧬 Upbringing & Background Synthesis
             </h3>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12, lineHeight: 1.6, fontSize: "0.95rem", color: "var(--text-light)" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 14, lineHeight: 1.7, fontSize: "1rem", color: "var(--text-light)" }}>
               {narrativeParagraphs.map((para, idx) => (
-                <p key={idx} style={{ margin: 0 }}>{para}</p>
+                <p key={idx} style={{ margin: 0, textIndent: idx > 0 ? "1.5em" : "0" }}>{para}</p>
               ))}
             </div>
           </div>
         )}
 
         {/* Main Details Grid */}
-        <div className="result-grid">
+        <div className="result-grid" style={{ marginBottom: 40 }}>
           {/* Left column: Strengths & Blindspots */}
           <div style={{ display: "flex", flexDirection: "column", gap: 30 }}>
-            <div className="glass-card result-subcard">
-              <h3>
+            <div className="glass-card result-subcard" style={{ position: "relative", overflow: "hidden" }}>
+              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 4, background: pType.color }} />
+              <h3 style={{ borderBottom: "1px solid var(--border-glass)", paddingBottom: 12 }}>
                 <CheckCircle2 size={20} color="var(--color-emerald)" />
                 Core Strengths
               </h3>
-              <ul className="bullet-list">
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 16 }}>
                 {pType.strengths.map((str, idx) => (
-                  <li key={idx}>{str}</li>
+                  <div 
+                    key={idx} 
+                    style={{ 
+                      display: "flex", 
+                      alignItems: "center", 
+                      gap: 12, 
+                      padding: "12px 16px", 
+                      background: "rgba(5, 150, 105, 0.04)", 
+                      border: "1px solid rgba(5, 150, 105, 0.1)", 
+                      borderRadius: "var(--radius-md)" 
+                    }}
+                  >
+                    <CheckCircle2 size={18} color="var(--color-emerald)" style={{ flexShrink: 0 }} />
+                    <span style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--text-light)" }}>{str}</span>
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
 
-            <div className="glass-card result-subcard">
-              <h3>
+            <div className="glass-card result-subcard" style={{ position: "relative", overflow: "hidden" }}>
+              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 4, background: pType.color }} />
+              <h3 style={{ borderBottom: "1px solid var(--border-glass)", paddingBottom: 12 }}>
                 <AlertTriangle size={20} color="var(--color-rose)" />
                 Blind Spots
               </h3>
-              <ul className="bullet-list">
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 16 }}>
                 {pType.blindSpots.map((bs, idx) => (
-                  <li key={idx} style={{ color: "var(--text-light)" }}>{bs}</li>
+                  <div 
+                    key={idx} 
+                    style={{ 
+                      display: "flex", 
+                      alignItems: "center", 
+                      gap: 12, 
+                      padding: "12px 16px", 
+                      background: "rgba(225, 29, 72, 0.04)", 
+                      border: "1px solid rgba(225, 29, 72, 0.1)", 
+                      borderRadius: "var(--radius-md)" 
+                    }}
+                  >
+                    <AlertTriangle size={18} color="var(--color-rose)" style={{ flexShrink: 0 }} />
+                    <span style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--text-light)" }}>{bs}</span>
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           </div>
 
           {/* Right column: Emotional & Comm style */}
           <div style={{ display: "flex", flexDirection: "column", gap: 30 }}>
-            <div className="glass-card result-subcard" style={{ flex: 1 }}>
-              <h3>
-                <Heart size={20} color="var(--color-secondary)" />
-                Emotional Style
-              </h3>
-              <p className="result-detail-text" style={{ marginBottom: 20 }}>
-                {pType.emotionalStyle}
-              </p>
+            <div className="glass-card result-subcard" style={{ position: "relative", overflow: "hidden", height: "100%", display: "flex", flexDirection: "column", gap: 24 }}>
+              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 4, background: pType.color }} />
+              
+              <div>
+                <h3 style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "1.25rem", borderBottom: "1px solid var(--border-glass)", paddingBottom: 12, marginBottom: 12 }}>
+                  <Heart size={20} color="var(--color-secondary)" />
+                  Emotional Style
+                </h3>
+                <p className="result-detail-text" style={{ background: "rgba(244, 114, 182, 0.04)", border: "1px solid rgba(244, 114, 182, 0.1)", padding: 18, borderRadius: "var(--radius-md)", fontSize: "0.95rem", lineHeight: 1.6 }}>
+                  {pType.emotionalStyle}
+                </p>
+              </div>
 
-              <h3>
-                <MessageSquare size={20} color="var(--color-primary)" />
-                Communication Style
-              </h3>
-              <p className="result-detail-text">
-                {pType.communicationStyle}
-              </p>
+              <div>
+                <h3 style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "1.25rem", borderBottom: "1px solid var(--border-glass)", paddingBottom: 12, marginBottom: 12 }}>
+                  <MessageSquare size={20} color="var(--color-primary)" />
+                  Communication Style
+                </h3>
+                <p className="result-detail-text" style={{ background: "rgba(236, 72, 153, 0.04)", border: "1px solid rgba(236, 72, 153, 0.1)", padding: 18, borderRadius: "var(--radius-md)", fontSize: "0.95rem", lineHeight: 1.6 }}>
+                  {pType.communicationStyle}
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Full Dimensions Chart Card */}
-        <div className="glass-card result-subcard" style={{ textAlign: "left", marginBottom: 40 }}>
-          <h3 style={{ borderBottom: "1px solid var(--border-glass)", paddingBottom: 12 }}>
+        <div className="glass-card result-subcard" style={{ textAlign: "left", marginBottom: 40, position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 5, background: pType.color }} />
+          <h3 style={{ borderBottom: "1px solid var(--border-glass)", paddingBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
             <Sparkles size={20} color="var(--color-accent)" />
             Your 8 Soul Coordinates (Likert Scale 1 - 5)
           </h3>
-          <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginBottom: 24 }}>
+          <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginBottom: 30 }}>
             Here is exactly where your thoughts, behaviors, and emotions settle on our 8 personality dimensions.
           </p>
 
-          <div className="dimensions-visual">
+          <div className="dimensions-visual" style={{ gap: 28 }}>
             {/* Dimension 1: Honesty-Humility */}
             <div className="dim-row">
               <div className="dim-label-row">
-                <span className="dim-left">🤝 Sly / Status-seeking (1.0)</span>
-                <span style={{ color: "var(--text-muted)" }}>Honesty-Humility ({profile.dimensions.honesty.toFixed(1)})</span>
-                <span className="dim-right">(5.0) Sincere & Humble 🛡️</span>
+                <span className="dim-left" style={{ fontWeight: 600 }}>🤝 Sly / Status-seeking (1.0)</span>
+                <span style={{ color: "var(--text-dark)", fontWeight: 700 }}>Honesty-Humility ({profile.dimensions.honesty.toFixed(1)})</span>
+                <span className="dim-right" style={{ fontWeight: 600 }}>(5.0) Sincere & Humble 🛡️</span>
               </div>
-              <div className="dim-slider-bg">
-                <div className="dim-node" style={{ left: `${getPercentage(profile.dimensions.honesty)}%`, borderColor: "var(--color-primary)" }} />
+              <div className="dim-slider-bg" style={{ height: 10, background: "rgba(0,0,0,0.05)" }}>
+                {/* Active fill track */}
+                <div style={{
+                  position: "absolute",
+                  left: 0,
+                  top: 0,
+                  height: "100%",
+                  width: getPercentage(profile.dimensions.honesty) + "%",
+                  background: pType.color,
+                  borderRadius: "9999px"
+                }} />
+                <div 
+                  className="dim-node" 
+                  style={{ 
+                    left: getPercentage(profile.dimensions.honesty) + "%", 
+                    borderColor: borderColors[pType.id] || "var(--color-primary)",
+                    boxShadow: "0 0 12px " + (shadowColors[pType.id] || "rgba(236,72,153,0.3)")
+                  }} 
+                />
               </div>
             </div>
 
             {/* Dimension 2: Emotionality */}
             <div className="dim-row">
               <div className="dim-label-row">
-                <span className="dim-left">🌊 Tough-minded / Detached (1.0)</span>
-                <span style={{ color: "var(--text-muted)" }}>Emotionality & Sentimentality ({profile.dimensions.emotionality.toFixed(1)})</span>
-                <span className="dim-right">(5.0) Sensitive & Sentimental 🧘</span>
+                <span className="dim-left" style={{ fontWeight: 600 }}>🌊 Tough-minded / Detached (1.0)</span>
+                <span style={{ color: "var(--text-dark)", fontWeight: 700 }}>Emotionality & Sentimentality ({profile.dimensions.emotionality.toFixed(1)})</span>
+                <span className="dim-right" style={{ fontWeight: 600 }}>(5.0) Sensitive & Sentimental 🧘</span>
               </div>
-              <div className="dim-slider-bg">
-                <div className="dim-node" style={{ left: `${getPercentage(profile.dimensions.emotionality)}%`, borderColor: "var(--color-cyan)" }} />
+              <div className="dim-slider-bg" style={{ height: 10, background: "rgba(0,0,0,0.05)" }}>
+                {/* Active fill track */}
+                <div style={{
+                  position: "absolute",
+                  left: 0,
+                  top: 0,
+                  height: "100%",
+                  width: getPercentage(profile.dimensions.emotionality) + "%",
+                  background: pType.color,
+                  borderRadius: "9999px"
+                }} />
+                <div 
+                  className="dim-node" 
+                  style={{ 
+                    left: getPercentage(profile.dimensions.emotionality) + "%", 
+                    borderColor: borderColors[pType.id] || "var(--color-primary)",
+                    boxShadow: "0 0 12px " + (shadowColors[pType.id] || "rgba(236,72,153,0.3)")
+                  }} 
+                />
               </div>
             </div>
 
             {/* Dimension 3: Extraversion */}
             <div className="dim-row">
               <div className="dim-label-row">
-                <span className="dim-left">🤫 Quiet & Introspective (1.0)</span>
-                <span style={{ color: "var(--text-muted)" }}>Extraversion & Energy ({profile.dimensions.extraversion.toFixed(1)})</span>
-                <span className="dim-right">(5.0) Social & Expressive 📢</span>
+                <span className="dim-left" style={{ fontWeight: 600 }}>🤫 Quiet & Introspective (1.0)</span>
+                <span style={{ color: "var(--text-dark)", fontWeight: 700 }}>Extraversion & Energy ({profile.dimensions.extraversion.toFixed(1)})</span>
+                <span className="dim-right" style={{ fontWeight: 600 }}>(5.0) Social & Expressive 📢</span>
               </div>
-              <div className="dim-slider-bg">
-                <div className="dim-node" style={{ left: `${getPercentage(profile.dimensions.extraversion)}%`, borderColor: "var(--color-primary)" }} />
+              <div className="dim-slider-bg" style={{ height: 10, background: "rgba(0,0,0,0.05)" }}>
+                {/* Active fill track */}
+                <div style={{
+                  position: "absolute",
+                  left: 0,
+                  top: 0,
+                  height: "100%",
+                  width: getPercentage(profile.dimensions.extraversion) + "%",
+                  background: pType.color,
+                  borderRadius: "9999px"
+                }} />
+                <div 
+                  className="dim-node" 
+                  style={{ 
+                    left: getPercentage(profile.dimensions.extraversion) + "%", 
+                    borderColor: borderColors[pType.id] || "var(--color-primary)",
+                    boxShadow: "0 0 12px " + (shadowColors[pType.id] || "rgba(236,72,153,0.3)")
+                  }} 
+                />
               </div>
             </div>
 
             {/* Dimension 4: Agreeableness */}
             <div className="dim-row">
               <div className="dim-label-row">
-                <span className="dim-left">🦅 Skeptical & Independent (1.0)</span>
-                <span style={{ color: "var(--text-muted)" }}>Agreeableness & Patience ({profile.dimensions.agreeableness.toFixed(1)})</span>
-                <span className="dim-right">(5.0) Patient & Forgiving 💖</span>
+                <span className="dim-left" style={{ fontWeight: 600 }}>🦅 Skeptical & Independent (1.0)</span>
+                <span style={{ color: "var(--text-dark)", fontWeight: 700 }}>Agreeableness & Patience ({profile.dimensions.agreeableness.toFixed(1)})</span>
+                <span className="dim-right" style={{ fontWeight: 600 }}>(5.0) Patient & Forgiving 💖</span>
               </div>
-              <div className="dim-slider-bg">
-                <div className="dim-node" style={{ left: `${getPercentage(profile.dimensions.agreeableness)}%`, borderColor: "var(--color-secondary)" }} />
+              <div className="dim-slider-bg" style={{ height: 10, background: "rgba(0,0,0,0.05)" }}>
+                {/* Active fill track */}
+                <div style={{
+                  position: "absolute",
+                  left: 0,
+                  top: 0,
+                  height: "100%",
+                  width: getPercentage(profile.dimensions.agreeableness) + "%",
+                  background: pType.color,
+                  borderRadius: "9999px"
+                }} />
+                <div 
+                  className="dim-node" 
+                  style={{ 
+                    left: getPercentage(profile.dimensions.agreeableness) + "%", 
+                    borderColor: borderColors[pType.id] || "var(--color-primary)",
+                    boxShadow: "0 0 12px " + (shadowColors[pType.id] || "rgba(236,72,153,0.3)")
+                  }} 
+                />
               </div>
             </div>
 
             {/* Dimension 5: Conscientiousness */}
             <div className="dim-row">
               <div className="dim-label-row">
-                <span className="dim-left">⚡ Spontaneous & Flexible (1.0)</span>
-                <span style={{ color: "var(--text-muted)" }}>Conscientiousness & Order ({profile.dimensions.conscientiousness.toFixed(1)})</span>
-                <span className="dim-right">(5.0) Organized & Structured 📈</span>
+                <span className="dim-left" style={{ fontWeight: 600 }}>⚡ Spontaneous & Flexible (1.0)</span>
+                <span style={{ color: "var(--text-dark)", fontWeight: 700 }}>Conscientiousness & Order ({profile.dimensions.conscientiousness.toFixed(1)})</span>
+                <span className="dim-right" style={{ fontWeight: 600 }}>(5.0) Organized & Structured 📈</span>
               </div>
-              <div className="dim-slider-bg">
-                <div className="dim-node" style={{ left: `${getPercentage(profile.dimensions.conscientiousness)}%`, borderColor: "var(--color-accent)" }} />
+              <div className="dim-slider-bg" style={{ height: 10, background: "rgba(0,0,0,0.05)" }}>
+                {/* Active fill track */}
+                <div style={{
+                  position: "absolute",
+                  left: 0,
+                  top: 0,
+                  height: "100%",
+                  width: getPercentage(profile.dimensions.conscientiousness) + "%",
+                  background: pType.color,
+                  borderRadius: "9999px"
+                }} />
+                <div 
+                  className="dim-node" 
+                  style={{ 
+                    left: getPercentage(profile.dimensions.conscientiousness) + "%", 
+                    borderColor: borderColors[pType.id] || "var(--color-primary)",
+                    boxShadow: "0 0 12px " + (shadowColors[pType.id] || "rgba(236,72,153,0.3)")
+                  }} 
+                />
               </div>
             </div>
 
             {/* Dimension 6: Openness to Experience */}
             <div className="dim-row">
               <div className="dim-label-row">
-                <span className="dim-left">🎨 Practical & Focused (1.0)</span>
-                <span style={{ color: "var(--text-muted)" }}>Openness & Curiosity ({profile.dimensions.openness.toFixed(1)})</span>
-                <span className="dim-right">(5.0) Creative & Curious 🔮</span>
+                <span className="dim-left" style={{ fontWeight: 600 }}>🎨 Practical & Focused (1.0)</span>
+                <span style={{ color: "var(--text-dark)", fontWeight: 700 }}>Openness & Curiosity ({profile.dimensions.openness.toFixed(1)})</span>
+                <span className="dim-right" style={{ fontWeight: 600 }}>(5.0) Creative & Curious 🔮</span>
               </div>
-              <div className="dim-slider-bg">
-                <div className="dim-node" style={{ left: `${getPercentage(profile.dimensions.openness)}%`, borderColor: "var(--color-primary)" }} />
+              <div className="dim-slider-bg" style={{ height: 10, background: "rgba(0,0,0,0.05)" }}>
+                {/* Active fill track */}
+                <div style={{
+                  position: "absolute",
+                  left: 0,
+                  top: 0,
+                  height: "100%",
+                  width: getPercentage(profile.dimensions.openness) + "%",
+                  background: pType.color,
+                  borderRadius: "9999px"
+                }} />
+                <div 
+                  className="dim-node" 
+                  style={{ 
+                    left: getPercentage(profile.dimensions.openness) + "%", 
+                    borderColor: borderColors[pType.id] || "var(--color-primary)",
+                    boxShadow: "0 0 12px " + (shadowColors[pType.id] || "rgba(236,72,153,0.3)")
+                  }} 
+                />
               </div>
             </div>
 
             {/* Dimension 7: EQ */}
             <div className="dim-row">
               <div className="dim-label-row">
-                <span className="dim-left">🧠 Private & Logical (1.0)</span>
-                <span style={{ color: "var(--text-muted)" }}>Emotional Intelligence ({profile.dimensions.eq.toFixed(1)})</span>
-                <span className="dim-right">(5.0) Empathetic & Listening 🤝</span>
+                <span className="dim-left" style={{ fontWeight: 600 }}>🧠 Private & Logical (1.0)</span>
+                <span style={{ color: "var(--text-dark)", fontWeight: 700 }}>Emotional Intelligence ({profile.dimensions.eq.toFixed(1)})</span>
+                <span className="dim-right" style={{ fontWeight: 600 }}>(5.0) Empathetic & Listening 🤝</span>
               </div>
-              <div className="dim-slider-bg">
-                <div className="dim-node" style={{ left: `${getPercentage(profile.dimensions.eq)}%`, borderColor: "var(--color-secondary)" }} />
+              <div className="dim-slider-bg" style={{ height: 10, background: "rgba(0,0,0,0.05)" }}>
+                {/* Active fill track */}
+                <div style={{
+                  position: "absolute",
+                  left: 0,
+                  top: 0,
+                  height: "100%",
+                  width: getPercentage(profile.dimensions.eq) + "%",
+                  background: pType.color,
+                  borderRadius: "9999px"
+                }} />
+                <div 
+                  className="dim-node" 
+                  style={{ 
+                    left: getPercentage(profile.dimensions.eq) + "%", 
+                    borderColor: borderColors[pType.id] || "var(--color-primary)",
+                    boxShadow: "0 0 12px " + (shadowColors[pType.id] || "rgba(236,72,153,0.3)")
+                  }} 
+                />
               </div>
             </div>
 
             {/* Dimension 8: Conflict Handling */}
             <div className="dim-row">
               <div className="dim-label-row">
-                <span className="dim-left">🚪 Space-seeking & Internal (1.0)</span>
-                <span style={{ color: "var(--text-muted)" }}>Conflict Handling ({profile.dimensions.conflict.toFixed(1)})</span>
-                <span className="dim-right">(5.0) Immediate & Constructive 🗣️</span>
+                <span className="dim-left" style={{ fontWeight: 600 }}>🚪 Space-seeking & Internal (1.0)</span>
+                <span style={{ color: "var(--text-dark)", fontWeight: 700 }}>Conflict Handling ({profile.dimensions.conflict.toFixed(1)})</span>
+                <span className="dim-right" style={{ fontWeight: 600 }}>(5.0) Immediate & Constructive 🗣️</span>
               </div>
-              <div className="dim-slider-bg">
-                <div className="dim-node" style={{ left: `${getPercentage(profile.dimensions.conflict)}%`, borderColor: "var(--color-primary)" }} />
+              <div className="dim-slider-bg" style={{ height: 10, background: "rgba(0,0,0,0.05)" }}>
+                {/* Active fill track */}
+                <div style={{
+                  position: "absolute",
+                  left: 0,
+                  top: 0,
+                  height: "100%",
+                  width: getPercentage(profile.dimensions.conflict) + "%",
+                  background: pType.color,
+                  borderRadius: "9999px"
+                }} />
+                <div 
+                  className="dim-node" 
+                  style={{ 
+                    left: getPercentage(profile.dimensions.conflict) + "%", 
+                    borderColor: borderColors[pType.id] || "var(--color-primary)",
+                    boxShadow: "0 0 12px " + (shadowColors[pType.id] || "rgba(236,72,153,0.3)")
+                  }} 
+                />
               </div>
             </div>
           </div>
