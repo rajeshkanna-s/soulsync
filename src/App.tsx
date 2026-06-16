@@ -3,7 +3,6 @@ import { Menu, X, Sparkles } from "lucide-react";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 import { calculateQuizResults, ScoreProfile, UserDemographics } from "./utils/engine";
 import { personalityTypes } from "./data/personalityTypes";
-import { supabase } from "./utils/supabase";
 
 // Styles
 import "./styles/App.css";
@@ -38,7 +37,7 @@ export default function App() {
     }
   }, [userProfile, setUserProfile, setQuizAnswers, view]);
 
-  const handleQuizComplete = async (answers: Record<number, number>, demographics: UserDemographics) => {
+  const handleQuizComplete = (answers: Record<number, number>, demographics: UserDemographics) => {
     setQuizAnswers(answers);
     setUserDemographics(demographics);
     
@@ -52,48 +51,6 @@ export default function App() {
 
     // Navigate to Results immediately
     setView("result");
-
-    // Asynchronously log user data to Supabase database for analysis
-    try {
-      const { error } = await supabase
-        .from("personality_responses")
-        .insert([
-          {
-            name: demographics.name,
-            gender: demographics.gender,
-            age: demographics.age,
-            born_city: demographics.bornCity,
-            living_city: demographics.livingCity,
-            known_languages: demographics.knownLanguages,
-            education: demographics.education,
-            country: demographics.country,
-            siblings: demographics.siblings,
-            languages_studied: demographics.languagesStudied,
-            parents_educated: demographics.parentsEducated,
-            wealth_status: demographics.wealthStatus,
-            love_failure: demographics.loveFailure,
-            disability: demographics.disability,
-            honesty: calculatedProfile.dimensions.honesty,
-            emotionality: calculatedProfile.dimensions.emotionality,
-            openness: calculatedProfile.dimensions.openness,
-            conscientiousness: calculatedProfile.dimensions.conscientiousness,
-            extraversion: calculatedProfile.dimensions.extraversion,
-            agreeableness: calculatedProfile.dimensions.agreeableness,
-            eq: calculatedProfile.dimensions.eq,
-            conflict: calculatedProfile.dimensions.conflict,
-            primary_type: calculatedProfile.primaryTypeId,
-            secondary_type: calculatedProfile.secondaryTypeId
-          }
-        ]);
-      
-      if (error) {
-        console.error("Error storing to Supabase:", error.message);
-      } else {
-        console.log("Profile response logged to database successfully.");
-      }
-    } catch (err) {
-      console.error("Supabase insertion error:", err);
-    }
   };
 
   const handleResetProfile = () => {
