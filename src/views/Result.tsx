@@ -93,6 +93,7 @@ export default function Result({
   // Partner upload match state
   const [partnerData, setPartnerData] = useState<PartnerProfileData | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [simulatedDimensions, setSimulatedDimensions] = useState<PartnerProfileData["dimensions"] | null>(null);
 
   // Convert 1-5 scale to percentage (0 - 100)
   const getPercentage = (val: number) => {
@@ -169,11 +170,13 @@ export default function Result({
         }
 
         setPartnerData(parsed as PartnerProfileData);
+        setSimulatedDimensions(parsed.dimensions);
         setUploadError(null);
         window.scrollTo({ top: 0, behavior: "smooth" });
       } catch (err: any) {
         setUploadError(err.message || "Failed to parse profile JSON. Ensure the file is not corrupted.");
         setPartnerData(null);
+        setSimulatedDimensions(null);
       }
     };
     reader.readAsText(file);
@@ -181,7 +184,7 @@ export default function Result({
 
   // Compatibility score calculation if partner data is loaded
   const partnerCompat = partnerData 
-    ? calculateCompatibility(profile.dimensions, partnerData.dimensions)
+    ? calculateCompatibility(profile.dimensions, simulatedDimensions || partnerData.dimensions)
     : null;
 
   const userGenderKey = (userGender || "female").toLowerCase() as "male" | "female";
@@ -193,6 +196,11 @@ export default function Result({
   const partnerExpr = partnerData 
     ? (genderExpressions[partnerGenderKey] || genderExpressions.female)
     : null;
+
+  const handleExitComparison = () => {
+    setPartnerData(null);
+    setSimulatedDimensions(null);
+  };
 
     return (
     <div className="container result-container animate-fade-in" style={{ position: "relative" }}>
@@ -224,11 +232,11 @@ export default function Result({
 
       {/* 1. COMPARISON MODE: Rendered only when a partner file is successfully uploaded */}
       {partnerData && partnerCompat && partnerExpr && (
-        <div className="glass-card" style={{ padding: 40, marginBottom: 40, border: "1px solid var(--color-primary)", position: "relative", overflow: "hidden" }}>
+        <div className="glass-card comparison-card" style={{ padding: 40, marginBottom: 40, border: "1px solid var(--color-primary)", position: "relative", overflow: "hidden" }}>
           {/* Top border highlight */}
           <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 6, background: "linear-gradient(90deg, var(--color-primary), var(--color-cyan))" }} />
           
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border-glass)", paddingBottom: 20, marginBottom: 30 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border-glass)", paddingBottom: 20, marginBottom: 30 }} className="comp-header">
             <div>
               <span className="quiz-category-tag" style={{ background: "rgba(236,72,153,0.1)", color: "var(--color-primary)" }}>
                 Active Synchronization Match
@@ -264,11 +272,57 @@ export default function Result({
               <button 
                 className="btn btn-secondary" 
                 style={{ width: 40, height: 40, borderRadius: "50%", padding: 0 }}
-                onClick={() => setPartnerData(null)}
+                onClick={handleExitComparison}
                 title="Exit Comparison"
               >
                 <X size={16} />
               </button>
+            </div>
+          </div>
+
+          {/* Match Dynamic Archetype Card */}
+          <div className="glass-card" style={{ 
+            padding: 24, 
+            marginBottom: 30, 
+            background: `linear-gradient(135deg, ${partnerCompat.color}15, rgba(255,255,255,0.75))`,
+            border: `1px solid ${partnerCompat.color}35`,
+            textAlign: "left",
+            position: "relative",
+            overflow: "hidden"
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+              <span style={{ fontSize: "2.4rem", lineHeight: 1 }}>{partnerCompat.archetype.emoji}</span>
+              <div>
+                <span style={{ fontSize: "0.75rem", textTransform: "uppercase", fontWeight: 700, color: partnerCompat.color, letterSpacing: "0.05em" }}>
+                  Relationship Dynamic Archetype
+                </span>
+                <h3 style={{ fontSize: "1.4rem", margin: "2px 0 0", color: "var(--text-dark)", fontWeight: 800 }}>
+                  {partnerCompat.archetype.name}
+                </h3>
+              </div>
+            </div>
+            <p style={{ fontSize: "0.95rem", lineHeight: 1.6, color: "var(--text-light)", marginBottom: 16 }}>
+              {partnerCompat.archetype.description}
+            </p>
+            <div>
+              <h5 style={{ fontSize: "0.85rem", textTransform: "uppercase", fontWeight: 700, color: "var(--text-dark)", marginBottom: 8 }}>
+                Key Synergy Strengths:
+              </h5>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {partnerCompat.archetype.strengths.map((str, sIdx) => (
+                  <span key={sIdx} style={{ 
+                    fontSize: "0.8rem", 
+                    padding: "6px 12px", 
+                    borderRadius: "99px", 
+                    background: `${partnerCompat.color}15`, 
+                    border: `1px solid ${partnerCompat.color}25`,
+                    color: "var(--text-dark)",
+                    fontWeight: 600
+                  }}>
+                    ✦ {str}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -295,7 +349,7 @@ export default function Result({
               <div className="comp-dim-label">
                 <span className="comp-dim-title">Honesty-Humility (H-factor)</span>
                 <span className="comp-dim-score" style={{ color: borderColors[pType.id] || "var(--color-primary)" }}>
-                  {Math.round(100 - Math.abs(profile.dimensions.honesty - partnerData.dimensions.honesty)/4 * 100)}% Match
+                  {Math.round(100 - Math.abs(profile.dimensions.honesty - (simulatedDimensions || partnerData.dimensions).honesty)/4 * 100)}% Match
                 </span>
               </div>
               <div className="comp-slider-container">
@@ -303,15 +357,15 @@ export default function Result({
                   {/* Connection Bridge */}
                   <div style={{
                     position: "absolute",
-                    left: Math.min(getPercentage(profile.dimensions.honesty), getPercentage(partnerData.dimensions.honesty)) + "%",
-                    width: Math.abs(getPercentage(profile.dimensions.honesty) - getPercentage(partnerData.dimensions.honesty)) + "%",
+                    left: Math.min(getPercentage(profile.dimensions.honesty), getPercentage((simulatedDimensions || partnerData.dimensions).honesty)) + "%",
+                    width: Math.abs(getPercentage(profile.dimensions.honesty) - getPercentage((simulatedDimensions || partnerData.dimensions).honesty)) + "%",
                     height: "100%",
                     background: "linear-gradient(90deg, var(--color-primary), var(--color-cyan))",
                     opacity: 0.35,
                     borderRadius: "9999px"
                   }} />
                   <div className="comp-marker comp-marker-me" style={{ left: getPercentage(profile.dimensions.honesty) + "%" }}>Me</div>
-                  <div className="comp-marker comp-marker-them" style={{ left: getPercentage(partnerData.dimensions.honesty) + "%", background: "var(--color-cyan)" }}>{partnerData.name[0]}</div>
+                  <div className="comp-marker comp-marker-them" style={{ left: getPercentage((simulatedDimensions || partnerData.dimensions).honesty) + "%", background: "var(--color-cyan)" }}>{partnerData.name[0]}</div>
                 </div>
                 <div className="comp-track-labels">
                   <span>Sly / Status-seeking</span>
@@ -325,7 +379,7 @@ export default function Result({
               <div className="comp-dim-label">
                 <span className="comp-dim-title">Emotionality & Sentimentality</span>
                 <span className="comp-dim-score" style={{ color: borderColors[pType.id] || "var(--color-primary)" }}>
-                  {Math.round(100 - Math.abs(profile.dimensions.emotionality - partnerData.dimensions.emotionality)/4 * 100)}% Match
+                  {Math.round(100 - Math.abs(profile.dimensions.emotionality - (simulatedDimensions || partnerData.dimensions).emotionality)/4 * 100)}% Match
                 </span>
               </div>
               <div className="comp-slider-container">
@@ -333,15 +387,15 @@ export default function Result({
                   {/* Connection Bridge */}
                   <div style={{
                     position: "absolute",
-                    left: Math.min(getPercentage(profile.dimensions.emotionality), getPercentage(partnerData.dimensions.emotionality)) + "%",
-                    width: Math.abs(getPercentage(profile.dimensions.emotionality) - getPercentage(partnerData.dimensions.emotionality)) + "%",
+                    left: Math.min(getPercentage(profile.dimensions.emotionality), getPercentage((simulatedDimensions || partnerData.dimensions).emotionality)) + "%",
+                    width: Math.abs(getPercentage(profile.dimensions.emotionality) - getPercentage((simulatedDimensions || partnerData.dimensions).emotionality)) + "%",
                     height: "100%",
                     background: "linear-gradient(90deg, var(--color-primary), var(--color-cyan))",
                     opacity: 0.35,
                     borderRadius: "9999px"
                   }} />
                   <div className="comp-marker comp-marker-me" style={{ left: getPercentage(profile.dimensions.emotionality) + "%" }}>Me</div>
-                  <div className="comp-marker comp-marker-them" style={{ left: getPercentage(partnerData.dimensions.emotionality) + "%", background: "var(--color-cyan)" }}>{partnerData.name[0]}</div>
+                  <div className="comp-marker comp-marker-them" style={{ left: getPercentage((simulatedDimensions || partnerData.dimensions).emotionality) + "%", background: "var(--color-cyan)" }}>{partnerData.name[0]}</div>
                 </div>
                 <div className="comp-track-labels">
                   <span>Tough-minded / Detached</span>
@@ -355,7 +409,7 @@ export default function Result({
               <div className="comp-dim-label">
                 <span className="comp-dim-title">Extraversion & Energy</span>
                 <span className="comp-dim-score" style={{ color: borderColors[pType.id] || "var(--color-primary)" }}>
-                  {Math.round(100 - Math.abs(profile.dimensions.extraversion - partnerData.dimensions.extraversion)/4 * 100)}% Match
+                  {Math.round(100 - Math.abs(profile.dimensions.extraversion - (simulatedDimensions || partnerData.dimensions).extraversion)/4 * 100)}% Match
                 </span>
               </div>
               <div className="comp-slider-container">
@@ -363,15 +417,15 @@ export default function Result({
                   {/* Connection Bridge */}
                   <div style={{
                     position: "absolute",
-                    left: Math.min(getPercentage(profile.dimensions.extraversion), getPercentage(partnerData.dimensions.extraversion)) + "%",
-                    width: Math.abs(getPercentage(profile.dimensions.extraversion) - getPercentage(partnerData.dimensions.extraversion)) + "%",
+                    left: Math.min(getPercentage(profile.dimensions.extraversion), getPercentage((simulatedDimensions || partnerData.dimensions).extraversion)) + "%",
+                    width: Math.abs(getPercentage(profile.dimensions.extraversion) - getPercentage((simulatedDimensions || partnerData.dimensions).extraversion)) + "%",
                     height: "100%",
                     background: "linear-gradient(90deg, var(--color-primary), var(--color-cyan))",
                     opacity: 0.35,
                     borderRadius: "9999px"
                   }} />
                   <div className="comp-marker comp-marker-me" style={{ left: getPercentage(profile.dimensions.extraversion) + "%" }}>Me</div>
-                  <div className="comp-marker comp-marker-them" style={{ left: getPercentage(partnerData.dimensions.extraversion) + "%", background: "var(--color-cyan)" }}>{partnerData.name[0]}</div>
+                  <div className="comp-marker comp-marker-them" style={{ left: getPercentage((simulatedDimensions || partnerData.dimensions).extraversion) + "%", background: "var(--color-cyan)" }}>{partnerData.name[0]}</div>
                 </div>
                 <div className="comp-track-labels">
                   <span>Introspective / Reserved</span>
@@ -385,7 +439,7 @@ export default function Result({
               <div className="comp-dim-label">
                 <span className="comp-dim-title">Agreeableness & Patience</span>
                 <span className="comp-dim-score" style={{ color: borderColors[pType.id] || "var(--color-primary)" }}>
-                  {Math.round(100 - Math.abs(profile.dimensions.agreeableness - partnerData.dimensions.agreeableness)/4 * 100)}% Match
+                  {Math.round(100 - Math.abs(profile.dimensions.agreeableness - (simulatedDimensions || partnerData.dimensions).agreeableness)/4 * 100)}% Match
                 </span>
               </div>
               <div className="comp-slider-container">
@@ -393,15 +447,15 @@ export default function Result({
                   {/* Connection Bridge */}
                   <div style={{
                     position: "absolute",
-                    left: Math.min(getPercentage(profile.dimensions.agreeableness), getPercentage(partnerData.dimensions.agreeableness)) + "%",
-                    width: Math.abs(getPercentage(profile.dimensions.agreeableness) - getPercentage(partnerData.dimensions.agreeableness)) + "%",
+                    left: Math.min(getPercentage(profile.dimensions.agreeableness), getPercentage((simulatedDimensions || partnerData.dimensions).agreeableness)) + "%",
+                    width: Math.abs(getPercentage(profile.dimensions.agreeableness) - getPercentage((simulatedDimensions || partnerData.dimensions).agreeableness)) + "%",
                     height: "100%",
                     background: "linear-gradient(90deg, var(--color-primary), var(--color-cyan))",
                     opacity: 0.35,
                     borderRadius: "9999px"
                   }} />
                   <div className="comp-marker comp-marker-me" style={{ left: getPercentage(profile.dimensions.agreeableness) + "%" }}>Me</div>
-                  <div className="comp-marker comp-marker-them" style={{ left: getPercentage(partnerData.dimensions.agreeableness) + "%", background: "var(--color-cyan)" }}>{partnerData.name[0]}</div>
+                  <div className="comp-marker comp-marker-them" style={{ left: getPercentage((simulatedDimensions || partnerData.dimensions).agreeableness) + "%", background: "var(--color-cyan)" }}>{partnerData.name[0]}</div>
                 </div>
                 <div className="comp-track-labels">
                   <span>Skeptical / Headstrong</span>
@@ -415,7 +469,7 @@ export default function Result({
               <div className="comp-dim-label">
                 <span className="comp-dim-title">Conscientiousness & Order</span>
                 <span className="comp-dim-score" style={{ color: borderColors[pType.id] || "var(--color-primary)" }}>
-                  {Math.round(100 - Math.abs(profile.dimensions.conscientiousness - partnerData.dimensions.conscientiousness)/4 * 100)}% Match
+                  {Math.round(100 - Math.abs(profile.dimensions.conscientiousness - (simulatedDimensions || partnerData.dimensions).conscientiousness)/4 * 100)}% Match
                 </span>
               </div>
               <div className="comp-slider-container">
@@ -423,15 +477,15 @@ export default function Result({
                   {/* Connection Bridge */}
                   <div style={{
                     position: "absolute",
-                    left: Math.min(getPercentage(profile.dimensions.conscientiousness), getPercentage(partnerData.dimensions.conscientiousness)) + "%",
-                    width: Math.abs(getPercentage(profile.dimensions.conscientiousness) - getPercentage(partnerData.dimensions.conscientiousness)) + "%",
+                    left: Math.min(getPercentage(profile.dimensions.conscientiousness), getPercentage((simulatedDimensions || partnerData.dimensions).conscientiousness)) + "%",
+                    width: Math.abs(getPercentage(profile.dimensions.conscientiousness) - getPercentage((simulatedDimensions || partnerData.dimensions).conscientiousness)) + "%",
                     height: "100%",
                     background: "linear-gradient(90deg, var(--color-primary), var(--color-cyan))",
                     opacity: 0.35,
                     borderRadius: "9999px"
                   }} />
                   <div className="comp-marker comp-marker-me" style={{ left: getPercentage(profile.dimensions.conscientiousness) + "%" }}>Me</div>
-                  <div className="comp-marker comp-marker-them" style={{ left: getPercentage(partnerData.dimensions.conscientiousness) + "%", background: "var(--color-cyan)" }}>{partnerData.name[0]}</div>
+                  <div className="comp-marker comp-marker-them" style={{ left: getPercentage((simulatedDimensions || partnerData.dimensions).conscientiousness) + "%", background: "var(--color-cyan)" }}>{partnerData.name[0]}</div>
                 </div>
                 <div className="comp-track-labels">
                   <span>Spontaneous / Flexible</span>
@@ -445,7 +499,7 @@ export default function Result({
               <div className="comp-dim-label">
                 <span className="comp-dim-title">Openness & Curiosity</span>
                 <span className="comp-dim-score" style={{ color: borderColors[pType.id] || "var(--color-primary)" }}>
-                  {Math.round(100 - Math.abs(profile.dimensions.openness - partnerData.dimensions.openness)/4 * 100)}% Match
+                  {Math.round(100 - Math.abs(profile.dimensions.openness - (simulatedDimensions || partnerData.dimensions).openness)/4 * 100)}% Match
                 </span>
               </div>
               <div className="comp-slider-container">
@@ -453,15 +507,15 @@ export default function Result({
                   {/* Connection Bridge */}
                   <div style={{
                     position: "absolute",
-                    left: Math.min(getPercentage(profile.dimensions.openness), getPercentage(partnerData.dimensions.openness)) + "%",
-                    width: Math.abs(getPercentage(profile.dimensions.openness) - getPercentage(partnerData.dimensions.openness)) + "%",
+                    left: Math.min(getPercentage(profile.dimensions.openness), getPercentage((simulatedDimensions || partnerData.dimensions).openness)) + "%",
+                    width: Math.abs(getPercentage(profile.dimensions.openness) - getPercentage((simulatedDimensions || partnerData.dimensions).openness)) + "%",
                     height: "100%",
                     background: "linear-gradient(90deg, var(--color-primary), var(--color-cyan))",
                     opacity: 0.35,
                     borderRadius: "9999px"
                   }} />
                   <div className="comp-marker comp-marker-me" style={{ left: getPercentage(profile.dimensions.openness) + "%" }}>Me</div>
-                  <div className="comp-marker comp-marker-them" style={{ left: getPercentage(partnerData.dimensions.openness) + "%", background: "var(--color-cyan)" }}>{partnerData.name[0]}</div>
+                  <div className="comp-marker comp-marker-them" style={{ left: getPercentage((simulatedDimensions || partnerData.dimensions).openness) + "%", background: "var(--color-cyan)" }}>{partnerData.name[0]}</div>
                 </div>
                 <div className="comp-track-labels">
                   <span>Practical / Traditional</span>
@@ -475,7 +529,7 @@ export default function Result({
               <div className="comp-dim-label">
                 <span className="comp-dim-title">Emotional Intelligence (EQ)</span>
                 <span className="comp-dim-score" style={{ color: borderColors[pType.id] || "var(--color-primary)" }}>
-                  {Math.round(100 - Math.abs(profile.dimensions.eq - partnerData.dimensions.eq)/4 * 100)}% Match
+                  {Math.round(100 - Math.abs(profile.dimensions.eq - (simulatedDimensions || partnerData.dimensions).eq)/4 * 100)}% Match
                 </span>
               </div>
               <div className="comp-slider-container">
@@ -483,15 +537,15 @@ export default function Result({
                   {/* Connection Bridge */}
                   <div style={{
                     position: "absolute",
-                    left: Math.min(getPercentage(profile.dimensions.eq), getPercentage(partnerData.dimensions.eq)) + "%",
-                    width: Math.abs(getPercentage(profile.dimensions.eq) - getPercentage(partnerData.dimensions.eq)) + "%",
+                    left: Math.min(getPercentage(profile.dimensions.eq), getPercentage((simulatedDimensions || partnerData.dimensions).eq)) + "%",
+                    width: Math.abs(getPercentage(profile.dimensions.eq) - getPercentage((simulatedDimensions || partnerData.dimensions).eq)) + "%",
                     height: "100%",
                     background: "linear-gradient(90deg, var(--color-primary), var(--color-cyan))",
                     opacity: 0.35,
                     borderRadius: "9999px"
                   }} />
                   <div className="comp-marker comp-marker-me" style={{ left: getPercentage(profile.dimensions.eq) + "%" }}>Me</div>
-                  <div className="comp-marker comp-marker-them" style={{ left: getPercentage(partnerData.dimensions.eq) + "%", background: "var(--color-cyan)" }}>{partnerData.name[0]}</div>
+                  <div className="comp-marker comp-marker-them" style={{ left: getPercentage((simulatedDimensions || partnerData.dimensions).eq) + "%", background: "var(--color-cyan)" }}>{partnerData.name[0]}</div>
                 </div>
                 <div className="comp-track-labels">
                   <span>Logical / Private</span>
@@ -505,7 +559,7 @@ export default function Result({
               <div className="comp-dim-label">
                 <span className="comp-dim-title">Conflict Handling Style</span>
                 <span className="comp-dim-score" style={{ color: borderColors[pType.id] || "var(--color-primary)" }}>
-                  {Math.round(100 - Math.abs(profile.dimensions.conflict - partnerData.dimensions.conflict)/4 * 100)}% Match
+                  {Math.round(100 - Math.abs(profile.dimensions.conflict - (simulatedDimensions || partnerData.dimensions).conflict)/4 * 100)}% Match
                 </span>
               </div>
               <div className="comp-slider-container">
@@ -513,21 +567,140 @@ export default function Result({
                   {/* Connection Bridge */}
                   <div style={{
                     position: "absolute",
-                    left: Math.min(getPercentage(profile.dimensions.conflict), getPercentage(partnerData.dimensions.conflict)) + "%",
-                    width: Math.abs(getPercentage(profile.dimensions.conflict) - getPercentage(partnerData.dimensions.conflict)) + "%",
+                    left: Math.min(getPercentage(profile.dimensions.conflict), getPercentage((simulatedDimensions || partnerData.dimensions).conflict)) + "%",
+                    width: Math.abs(getPercentage(profile.dimensions.conflict) - getPercentage((simulatedDimensions || partnerData.dimensions).conflict)) + "%",
                     height: "100%",
                     background: "linear-gradient(90deg, var(--color-primary), var(--color-cyan))",
                     opacity: 0.35,
                     borderRadius: "9999px"
                   }} />
                   <div className="comp-marker comp-marker-me" style={{ left: getPercentage(profile.dimensions.conflict) + "%" }}>Me</div>
-                  <div className="comp-marker comp-marker-them" style={{ left: getPercentage(partnerData.dimensions.conflict) + "%", background: "var(--color-cyan)" }}>{partnerData.name[0]}</div>
+                  <div className="comp-marker comp-marker-them" style={{ left: getPercentage((simulatedDimensions || partnerData.dimensions).conflict) + "%", background: "var(--color-cyan)" }}>{partnerData.name[0]}</div>
                 </div>
                 <div className="comp-track-labels">
                   <span>Space-seeking / Internal</span>
                   <span>Immediate / Constructive</span>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* 🌱 Bonding Action Plan Card */}
+          <div className="glass-card" style={{ padding: "30px", marginBottom: "40px", textAlign: "left", border: "1px solid var(--border-glass)" }}>
+            <h3 style={{ fontSize: "1.25rem", marginBottom: "20px", display: "flex", alignItems: "center", gap: "10px", borderBottom: "1px solid var(--border-glass)", paddingBottom: "12px" }}>
+              <Flower2 size={20} color="var(--color-primary)" />
+              🌱 Your Custom Bonding Action Plan
+            </h3>
+            <p style={{ fontSize: "0.9rem", color: "var(--text-muted)", marginBottom: "24px", lineHeight: 1.5 }}>
+              Based on the largest personality differences between you and {partnerData.name}, our engine has generated 3 high-impact exercises to foster mutual understanding and communication.
+            </p>
+            
+            <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "24px" }}>
+              {partnerCompat.exercises.map((ex, exIdx) => (
+                <div key={exIdx} className="glass-card" style={{ padding: "20px", background: "rgba(255,255,255,0.45)", border: "1px solid rgba(0,0,0,0.03)", position: "relative", overflow: "hidden" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "8px", marginBottom: "10px" }}>
+                    <h4 style={{ fontSize: "1.05rem", fontWeight: 700, color: "var(--color-primary)", margin: 0 }}>
+                      {exIdx + 1}. {ex.title}
+                    </h4>
+                    <span style={{ fontSize: "0.75rem", fontWeight: 700, padding: "3px 8px", borderRadius: "99px", background: "rgba(13, 148, 136, 0.08)", color: "var(--color-cyan)", border: "1px solid rgba(13, 148, 136, 0.15)" }}>
+                      ⏱️ {ex.duration}
+                    </span>
+                  </div>
+                  <p style={{ fontSize: "0.9rem", color: "var(--text-light)", marginBottom: "14px", lineHeight: 1.5 }}>
+                    {ex.description}
+                  </p>
+                  <div style={{ paddingLeft: "4px" }}>
+                    <h5 style={{ fontSize: "0.8rem", textTransform: "uppercase", fontWeight: 700, color: "var(--text-dark)", marginBottom: "8px" }}>
+                      Action Steps:
+                    </h5>
+                    <ol style={{ margin: 0, paddingLeft: "16px", fontSize: "0.85rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
+                      {ex.actionSteps.map((step, sIdx) => (
+                        <li key={sIdx} style={{ marginBottom: "6px" }}>{step}</li>
+                      ))}
+                    </ol>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 🔄 Relational Growth Simulator */}
+          <div className="glass-card" style={{ padding: "30px", marginBottom: "40px", textAlign: "left", border: "1px solid var(--color-cyan)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", borderBottom: "1px solid var(--border-glass)", paddingBottom: "12px", marginBottom: "20px" }} className="comp-header">
+              <h3 style={{ fontSize: "1.25rem", margin: 0, display: "flex", alignItems: "center", gap: "10px" }}>
+                <Sliders size={20} color="var(--color-cyan)" />
+                🔄 Relational Growth Simulator
+              </h3>
+              <button 
+                className="btn btn-secondary" 
+                style={{ padding: "6px 12px", fontSize: "0.8rem" }}
+                onClick={() => setSimulatedDimensions(partnerData.dimensions)}
+              >
+                Reset to Original
+              </button>
+            </div>
+            <p style={{ fontSize: "0.9rem", color: "var(--text-muted)", marginBottom: "24px", lineHeight: 1.5 }}>
+              <strong>Interactive Sandbox:</strong> What if {partnerData.name} develops their emotional resilience or changes how they resolve conflicts? 
+              Drag the sliders below to adjust their coordinates and watch the overall compatibility and insights update in real-time.
+            </p>
+
+            <div className="form-grid-2" style={{ gap: "20px 30px" }}>
+              {([
+                { key: "honesty", title: "Honesty-Humility", left: "Sly / Status-seeking", right: "Sincere / Humble" },
+                { key: "emotionality", title: "Emotionality & Sentimentality", left: "Tough-minded / Detached", right: "Sensitive / Sentimental" },
+                { key: "extraversion", title: "Extraversion & Energy", left: "Introspective / Reserved", right: "Social / Energetic" },
+                { key: "agreeableness", title: "Agreeableness & Patience", left: "Skeptical / Headstrong", right: "Patient / Forgiving" },
+                { key: "conscientiousness", title: "Conscientiousness & Order", left: "Spontaneous / Flexible", right: "Organized / Deliberate" },
+                { key: "openness", title: "Openness & Curiosity", left: "Practical / Traditional", right: "Creative / Inquisitive" },
+                { key: "eq", title: "Emotional Intelligence (EQ)", left: "Logical / Private", right: "Empathetic / Vulnerable" },
+                { key: "conflict", title: "Conflict Handling Style", left: "Space-seeking / Internal", right: "Immediate / Constructive" }
+              ] as const).map((dim) => {
+                const currentVal = simulatedDimensions ? simulatedDimensions[dim.key] : partnerData.dimensions[dim.key];
+                const originalVal = partnerData.dimensions[dim.key];
+                
+                return (
+                  <div key={dim.key} style={{ display: "flex", flexDirection: "column", gap: "6px" }} className="simulator-slider-row">
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontWeight: 700, fontSize: "0.85rem", color: "var(--text-dark)" }}>{dim.title}</span>
+                      <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--color-cyan)" }}>
+                        {currentVal.toFixed(1)} 
+                        {Math.abs(currentVal - originalVal) > 0.05 && (
+                          <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: 500, marginLeft: "4px" }}>
+                            (Orig: {originalVal.toFixed(1)})
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min="1.0" 
+                      max="5.0" 
+                      step="0.1" 
+                      value={currentVal} 
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value);
+                        setSimulatedDimensions(prev => ({
+                          ...(prev || partnerData.dimensions),
+                          [dim.key]: val
+                        }));
+                      }}
+                      style={{ 
+                        width: "100%", 
+                        height: "6px", 
+                        borderRadius: "99px", 
+                        background: "rgba(0,0,0,0.06)", 
+                        outline: "none", 
+                        cursor: "pointer",
+                        accentColor: "var(--color-cyan)"
+                      }}
+                    />
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.7rem", color: "var(--text-muted)" }}>
+                      <span>{dim.left}</span>
+                      <span>{dim.right}</span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -675,7 +848,7 @@ export default function Result({
           )}
           
           <div style={{ display: "flex", justifyContent: "center", marginTop: 30 }}>
-            <button className="btn btn-secondary animate-float" onClick={() => setPartnerData(null)}>
+            <button className="btn btn-secondary animate-float" onClick={handleExitComparison}>
               Exit Match & View My Report
             </button>
           </div>

@@ -677,3 +677,50 @@
   animation: float 5s ease-in-out infinite;
 }
 
+/* Responsive Form Grids & Mobile Layouts */
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 576px) {
+  .form-grid-2 {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .form-grid-3 {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .result-grid {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+  .result-header-card {
+    padding: 24px 16px !important;
+  }
+  .result-subcard {
+    padding: 24px 16px !important;
+  }
+  .comp-dims-list {
+    gap: 20px !important;
+  }
+  .comparison-card {
+    padding: 24px 16px !important;
+  }
+  .comp-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 16px !important;
+  }
+  .comp-header > div {
+    width: 100% !important;
+  }
+}

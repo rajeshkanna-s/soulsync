@@ -35,6 +35,20 @@ export interface ScoreProfile {
   demographics?: UserDemographics;
 }
 
+export interface MatchArchetype {
+  name: string;
+  emoji: string;
+  description: string;
+  strengths: string[];
+}
+
+export interface RelationshipExercise {
+  title: string;
+  description: string;
+  actionSteps: string[];
+  duration: string;
+}
+
 export interface CompatibilityBreakdown {
   mindMatch: number;      // Openness & Conscientiousness
   emotionalFit: number;   // Emotionality & EQ
@@ -45,6 +59,205 @@ export interface CompatibilityBreakdown {
   label: "Twin Souls ✨" | "Deep Connection 💞" | "Strong Potential 🌱" | "Growth Partners 🤝";
   color: string;
   insights: string[]; // Explanations on why they matched
+  archetype: MatchArchetype;
+  exercises: RelationshipExercise[];
+}
+
+export function calculateMatchArchetype(
+  dimA: ScoreProfile["dimensions"],
+  dimB: ScoreProfile["dimensions"]
+): MatchArchetype {
+  const avg = (key: keyof ScoreProfile["dimensions"]) => (dimA[key] + dimB[key]) / 2;
+  
+  // 1. Resilient Empaths: High EQ & High Agreeableness
+  if (avg("eq") >= 3.7 && avg("agreeableness") >= 3.7) {
+    return {
+      name: "The Resilient Empaths",
+      emoji: "🌸",
+      description: "Deeply connected through emotional intelligence, active listening, and heart-centered support. You read each other's feelings before speaking.",
+      strengths: ["Unmatched emotional support", "Deep active listening", "Gentle boundary management"]
+    };
+  }
+  
+  // 2. Safe Haven: High Agreeableness & Low Emotionality
+  if (avg("agreeableness") >= 3.7 && avg("emotionality") <= 2.8) {
+    return {
+      name: "The Safe Haven (Calm Anchor)",
+      emoji: "⚓",
+      description: "A connection built on extreme psychological safety, calm emotional anchors, and deep comfort. You offer each other a quiet harbor from life's storms.",
+      strengths: ["High emotional safety", "Low reactivity to stress", "Exceptional patience during tension"]
+    };
+  }
+
+  // 3. Visionary Co-Pilots: High Conscientiousness & High Openness
+  if (avg("conscientiousness") >= 3.7 && avg("openness") >= 3.7) {
+    return {
+      name: "The Visionary Co-Pilots",
+      emoji: "🚀",
+      description: "Driven by shared long-term planning, high ambition, and creative exploration. You challenge each other to think bigger and build a shared empire.",
+      strengths: ["Goal-oriented synergy", "Shared love for learning/creativity", "Strong future planning focus"]
+    };
+  }
+
+  // 4. Passionate Sparks: High Extraversion & High Emotionality
+  if (avg("extraversion") >= 3.7 && avg("emotionality") >= 3.4) {
+    return {
+      name: "The Passionate Sparks",
+      emoji: "🔥",
+      description: "An intense, high-energy relationship filled with social active engagement, adventure, and emotional expressivity. Life is never boring with you two.",
+      strengths: ["High energy and fun", "Intense chemical attraction", "Strong expressive support"]
+    };
+  }
+
+  // 5. Independent Co-existents: Low Conflict Pursuit & High Social / Boundary Gap
+  if (avg("conflict") <= 2.8 && Math.abs(dimA.extraversion - dimB.extraversion) >= 1.2) {
+    return {
+      name: "The Independent Co-existents",
+      emoji: "🌌",
+      description: "A relationship that highly respects personal sovereignty, personal space, and distinct independent interests while retaining a solid bond.",
+      strengths: ["Zero codependency", "Strong individual growth", "Respect for boundary structures"]
+    };
+  }
+
+  // 6. Balanced Harmony (Fallback)
+  return {
+    name: "The Balanced Harmony",
+    emoji: "☯️",
+    description: "A complementary partnership where one partner's quiet stability grounds the other's active spark, resulting in a beautifully balanced life.",
+    strengths: ["Complementary skillsets", "Mutual grounding effect", "Smooth division of labor"]
+  };
+}
+
+export function generateRelationalAdvice(
+  dimA: ScoreProfile["dimensions"],
+  dimB: ScoreProfile["dimensions"]
+): RelationshipExercise[] {
+  const gaps = [
+    { key: "honesty", value: Math.abs(dimA.honesty - dimB.honesty) },
+    { key: "emotionality", value: Math.abs(dimA.emotionality - dimB.emotionality) },
+    { key: "extraversion", value: Math.abs(dimA.extraversion - dimB.extraversion) },
+    { key: "agreeableness", value: Math.abs(dimA.agreeableness - dimB.agreeableness) },
+    { key: "conscientiousness", value: Math.abs(dimA.conscientiousness - dimB.conscientiousness) },
+    { key: "openness", value: Math.abs(dimA.openness - dimB.openness) },
+    { key: "eq", value: Math.abs(dimA.eq - dimB.eq) },
+    { key: "conflict", value: Math.abs(dimA.conflict - dimB.conflict) },
+  ];
+
+  // Sort gaps in descending order
+  gaps.sort((a, b) => b.value - a.value);
+
+  const exercises: RelationshipExercise[] = [];
+  const addedKeys = new Set<string>();
+
+  const addExercise = (key: string) => {
+    if (addedKeys.has(key)) return;
+    addedKeys.add(key);
+
+    if (key === "conflict") {
+      exercises.push({
+        title: "The 20-Minute Pause Rule",
+        description: "Bridges the gap between immediate-pursuit resolution and space-seeking conflict styles. This prevents feeling overwhelmed (flooded) or shut out.",
+        actionSteps: [
+          "When tension rises, either partner can request a '20-minute pause' using a gentle keyword.",
+          "During the pause, separate into different rooms and do breathing exercises or quiet activities (no dwelling on arguments).",
+          "Re-convene after exactly 20 minutes to resolve the issue with lowered heart rates."
+        ],
+        duration: "20 minutes per event"
+      });
+    } else if (key === "extraversion") {
+      exercises.push({
+        title: "Social Battery Alignment",
+        description: "Balancing the social extrovert's outgoing nature with the introvert's need to recharge in quiet spaces.",
+        actionSteps: [
+          "Co-plan the upcoming week: label events as 'High Social' or 'Quiet Recharge'.",
+          "Agree on an early exit strategy or a quiet corner code before entering high-social environments.",
+          "Designate one weekend night as a zero-outside-interaction date night."
+        ],
+        duration: "10 minutes weekly planning"
+      });
+    } else if (key === "conscientiousness") {
+      exercises.push({
+        title: "The Spontaneity & Chore Swap",
+        description: "Fosters appreciation for one partner's highly organized planning vs. the other partner's spontaneous flexibility.",
+        actionSteps: [
+          "The highly structured partner hands over one minor planning task (e.g. weekend lunch) to the spontaneous partner to decide on the fly.",
+          "The spontaneous partner commits to updating one shared calendar event or checklist item 48 hours in advance.",
+          "Acknowledge the effort in accommodating each other's pace without criticism."
+        ],
+        duration: "Ongoing (Weekly Check-in)"
+      });
+    } else if (key === "eq") {
+      exercises.push({
+        title: "Active Listening Huddle",
+        description: "Develops deeper mutual validation and reduces conversational jumping to solve problems instead of listening.",
+        actionSteps: [
+          "Partner A shares a current stressor or feeling for 3 minutes without interruption.",
+          "Partner B mirrors back what they heard starting with: 'It sounds like you felt...' without offering solutions.",
+          "Switch roles and repeat, focusing entirely on empathy and reassurance."
+        ],
+        duration: "10 minutes"
+      });
+    } else if (key === "openness") {
+      exercises.push({
+        title: "The Novelty Lottery",
+        description: "Aligns the routine-loving partner with the experience-seeking partner through mutual interest exploration.",
+        actionSteps: [
+          "Write 3 new activities on paper slips (1 adventurous, 1 creative, 1 cozy/simple).",
+          "Draw one slip blindly every fortnight and complete it together.",
+          "Share what you enjoyed and what was out of your comfort zone."
+        ],
+        duration: "2-3 hours bi-weekly"
+      });
+    } else if (key === "emotionality") {
+      exercises.push({
+        title: "The Anxiety/Stress Shield",
+        description: "Helps prevent high emotional reactivity in one partner from triggering stress mirroring in the other.",
+        actionSteps: [
+          "Use a rating scale (1-10) to declare stress levels when arriving home: e.g. 'I am at an 8 today'.",
+          "The less-stressed partner steps in to handle immediate logistics, acting as a 'shield' for 1 hour.",
+          "Establish that a partner's stress is not a reflection of the relationship's stability."
+        ],
+        duration: "Daily transition periods"
+      });
+    } else if (key === "honesty") {
+      exercises.push({
+        title: "Trust Sandbox / Safe Disclosure",
+        description: "Provides a zero-judgment zone for sharing hidden preferences, minor frustrations, or status worries.",
+        actionSteps: [
+          "Sit face-to-face and start with: 'I want to share something transparently because I trust you.'",
+          "Reveal a minor vulnerability or preference (e.g., how you feel about chore delegation).",
+          "The listening partner responds with a simple thank you and validation, with absolutely no retaliation."
+        ],
+        duration: "15 minutes"
+      });
+    } else if (key === "agreeableness") {
+      exercises.push({
+        title: "The Win-Win Tradeoff Game",
+        description: "Ensures that the accommodating partner doesn't harbor silent resentment while the assertive partner gets their way.",
+        actionSteps: [
+          "For a pending decision (e.g. vacation or furniture), list what each partner values most.",
+          "Assign a point system: Partner A gets their top choice, but Partner B gets veto power or selection of the next two decisions.",
+          "Explicitly voice: 'Thank you for compromising on this, let's make sure we balance it next time.'"
+        ],
+        duration: "15-30 minutes when deciding"
+      });
+    }
+  };
+
+  // Add exercises for the top gaps
+  for (const gap of gaps) {
+    addExercise(gap.key);
+    if (exercises.length >= 3) break;
+  }
+
+  // Fallbacks if we still don't have 3 exercises
+  const allKeys = ["conflict", "extraversion", "conscientiousness", "eq", "openness", "emotionality", "honesty", "agreeableness"];
+  for (const k of allKeys) {
+    if (exercises.length >= 3) break;
+    addExercise(k);
+  }
+
+  return exercises;
 }
 
 // Ideal coordinate profiles for each of the 8 personality types (on 1.0 - 5.0 scale)
@@ -245,6 +458,9 @@ export function calculateCompatibility(
     color = "#c27d38";
   }
 
+  const archetype = calculateMatchArchetype(dimA, dimB);
+  const exercises = generateRelationalAdvice(dimA, dimB);
+
   return {
     mindMatch,
     emotionalFit,
@@ -254,7 +470,9 @@ export function calculateCompatibility(
     overallScore,
     label,
     color,
-    insights: insights.length > 0 ? insights : ["Stable alignment in basic values and daily habits."]
+    insights: insights.length > 0 ? insights : ["Stable alignment in basic values and daily habits."],
+    archetype,
+    exercises
   };
 }
 

@@ -352,7 +352,7 @@ export default function Quiz({
                 />
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+              <div className="form-grid-2">
                 <div className="form-group">
                   <label className="form-label" htmlFor="user-age">Age</label>
                   <input
@@ -404,7 +404,7 @@ export default function Quiz({
               </div>
 
               {selectedCountry && (
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                <div className="form-grid-2">
                   <div className="form-group">
                     <label className="form-label" htmlFor="born-city">Born City</label>
                     {selectedCountry !== "Other" ? (
@@ -649,7 +649,7 @@ export default function Quiz({
                 Family Structure & Economic Standing
               </h3>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1.2fr", gap: 16 }}>
+              <div className="form-grid-2">
                 <div className="form-group">
                   <label className="form-label" htmlFor="user-siblings">No. of Siblings</label>
                   <input
@@ -689,7 +689,7 @@ export default function Quiz({
 
               <div className="form-group">
                 <label className="form-label">Socioeconomic Standing</label>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 6 }}>
+                <div className="form-grid-2" style={{ gap: 10, marginTop: 6 }}>
                   {(["poor", "medium", "rich", "millionaire", "billionaire"] as const).map((status) => (
                     <button
                       key={status}
